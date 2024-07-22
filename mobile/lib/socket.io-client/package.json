@@ -76,7 +76,7 @@
     "indexof": "0.0.1",
     "object-component": "0.0.3",
     "parseuri": "0.0.5",
-    "socket.io-parser": "2.3.1",
+    "socket.io-parser": "3.3.4",
     "to-array": "0.1.4"
   },
   "description": "[![Build Status](https://secure.travis-ci.org/socketio/socket.io-client.svg?branch=master)](http://travis-ci.org/socketio/socket.io-client) [![Dependency Status](https://david-dm.org/socketio/socket.io-client.svg)](https://david-dm.org/socketio/socket.io-",
