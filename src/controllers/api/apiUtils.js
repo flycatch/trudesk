@@ -12,6 +12,7 @@
  *  Copyright (c) 2014-2019. All rights reserved.
  */
 
+const logger = require('@/logger')
 const _ = require('lodash')
 
 const apiUtils = {}
@@ -59,7 +60,7 @@ apiUtils.generateJWTToken = function (dbUser, callback) {
 
     const token = jwt.sign({ user: resUser }, secret, { expiresIn: expires })
 
-    return callback(null, { token: token, refreshToken: refreshToken })
+    return callback(null, { token, refreshToken })
   })
 }
 
@@ -71,6 +72,40 @@ apiUtils.stripUserFields = function (user) {
   user.iOSDeviceTokens = undefined
 
   return user
+}
+
+/**
+ * @callback AsyncRequestHandler
+ * @param {import('express').Request} req
+ * @param {import('express').Response} res
+ * @param {import('express').NextFunction |  undefined} next
+ * @returns {Promise<any>}
+ *
+ * @callback ErrHandler
+ * @param {Error | undefined} err
+ * @returns {void}
+ */
+
+/**
+ * A function wraps error handling for request handlers. 
+ * By default this returns a 400 with error message.
+ *
+ * @param {AsyncRequestHandler} handler - an asynchrounous request handler
+ * @param {ErrHandler=} errHandler - An optional callback that handles error
+ *
+ * @returns {import('express').RequestHandler} An express request handler that wraps {@link AsyncRequestHandler}
+ */
+apiUtils.catchAsync = function (handler, errHandler) {
+    return async (req, res, next) => {
+        handler(req, res, next)
+            .catch(err => {
+                if (errHandler) {
+                    return errHandler(err)
+                }
+                logger.warn(`failed ${req.path} - ${err}`)
+                return this.sendApiError(res, 500, err)
+            })
+    }
 }
 
 module.exports = apiUtils
