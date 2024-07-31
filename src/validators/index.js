@@ -12,7 +12,7 @@ const VALIDATION_OPTIONS = {
 }
 
 const ObjectIdSchema = joi.string().required().custom((value, helper) => {
-  if (mongoose.Types.ObjectId.isValid(value)) {
+  if (!mongoose.Types.ObjectId.isValid(value)) {
     return helper.message("Invalid id")
   }
   return value
