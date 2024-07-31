@@ -20,7 +20,7 @@ const ObjectIdSchema = joi.string().required().custom((value, helper) => {
 
 /**
  * @template T
- * @typedef {[T, Array.<string> | undefined]} ValidationResult<E>
+ * @typedef {[T, string | undefined]} ValidationResult<E>
  */
 
 /**
@@ -70,7 +70,7 @@ const validate = function(schema, obj) {
   }
 
   if (errors && errors.length > 0) {
-    return [undefined, errors]
+    return [undefined, errors.join(',')]
   }
 
   return [obj, undefined]
