@@ -221,9 +221,8 @@ middleware.canUser = function (action) {
   }
 }
 
-middleware.isAdmin = function (req, res, next) {
-  var roles = global.roles
-  var role = _.find(roles, { _id: req.user.role._id })
+middleware.isAdmin = function(req, res, next) {
+  const role = global.roles.find(role => role._id.equals(req.user.role._id))
   role.isAdmin = role.grants.indexOf('admin:*') !== -1
 
   if (role.isAdmin) return next()
@@ -232,7 +231,7 @@ middleware.isAdmin = function (req, res, next) {
 }
 
 middleware.isAgentOrAdmin = function (req, res, next) {
-  var role = _.find(global.roles, { _id: req.user.role._id })
+  const role = global.roles.find(role => role._id.equals(req.user.role._id))
   role.isAdmin = role.grants.indexOf('admin:*') !== -1
   role.isAgent = role.grants.indexOf('agent:*') !== -1
 
@@ -242,7 +241,7 @@ middleware.isAgentOrAdmin = function (req, res, next) {
 }
 
 middleware.isAgent = function (req, res, next) {
-  var role = _.find(global.roles, { _id: req.user.role._id })
+  const role = global.roles.find(role => role._id.equals(req.user.role._id))
   role.isAgent = role.grants.indexOf('agent:*') !== -1
 
   if (role.isAgent) return next()
