@@ -2225,6 +2225,22 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@hapi/hoek@npm:^9.0.0, @hapi/hoek@npm:^9.3.0":
+  version: 9.3.0
+  resolution: "@hapi/hoek@npm:9.3.0"
+  checksum: 4771c7a776242c3c022b168046af4e324d116a9d2e1d60631ee64f474c6e38d1bb07092d898bf95c7bc5d334c5582798a1456321b2e53ca817d4e7c88bc25b43
+  languageName: node
+  linkType: hard
+
+"@hapi/topo@npm:^5.1.0":
+  version: 5.1.0
+  resolution: "@hapi/topo@npm:5.1.0"
+  dependencies:
+    "@hapi/hoek": ^9.0.0
+  checksum: 604dfd5dde76d5c334bd03f9001fce69c7ce529883acf92da96f4fe7e51221bf5e5110e964caca287a6a616ba027c071748ab636ff178ad750547fba611d6014
+  languageName: node
+  linkType: hard
+
 "@humanwhocodes/config-array@npm:^0.9.2":
   version: 0.9.3
   resolution: "@humanwhocodes/config-array@npm:0.9.3"
@@ -3237,6 +3253,29 @@ __metadata:
   peerDependencies:
     semantic-release: ">=18.0.0-beta.1"
   checksum: 0237e7e6ebf41b7c6a72eea704b007442cfd05910ded7059235a5684a0e4a233b2ca3c3e39923901131e7f0a4dcb5e95737af469081529acc393223c04715505
+  languageName: node
+  linkType: hard
+
+"@sideway/address@npm:^4.1.5":
+  version: 4.1.5
+  resolution: "@sideway/address@npm:4.1.5"
+  dependencies:
+    "@hapi/hoek": ^9.0.0
+  checksum: 3e3ea0f00b4765d86509282290368a4a5fd39a7995fdc6de42116ca19a96120858e56c2c995081def06e1c53e1f8bccc7d013f6326602bec9d56b72ee2772b9d
+  languageName: node
+  linkType: hard
+
+"@sideway/formula@npm:^3.0.1":
+  version: 3.0.1
+  resolution: "@sideway/formula@npm:3.0.1"
+  checksum: e4beeebc9dbe2ff4ef0def15cec0165e00d1612e3d7cea0bc9ce5175c3263fc2c818b679bd558957f49400ee7be9d4e5ac90487e1625b4932e15c4aa7919c57a
+  languageName: node
+  linkType: hard
+
+"@sideway/pinpoint@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "@sideway/pinpoint@npm:2.0.0"
+  checksum: 0f4491e5897fcf5bf02c46f5c359c56a314e90ba243f42f0c100437935daa2488f20482f0f77186bd6bf43345095a95d8143ecf8b1f4d876a7bc0806aba9c3d2
   languageName: node
   linkType: hard
 
@@ -12583,6 +12622,19 @@ __metadata:
   languageName: node
   linkType: hard
 
+"joi@npm:17.13.3":
+  version: 17.13.3
+  resolution: "joi@npm:17.13.3"
+  dependencies:
+    "@hapi/hoek": ^9.3.0
+    "@hapi/topo": ^5.1.0
+    "@sideway/address": ^4.1.5
+    "@sideway/formula": ^3.0.1
+    "@sideway/pinpoint": ^2.0.0
+  checksum: 66ed454fee3d8e8da1ce21657fd2c7d565d98f3e539d2c5c028767e5f38cbd6297ce54df8312d1d094e62eb38f9452ebb43da4ce87321df66cf5e3f128cbc400
+  languageName: node
+  linkType: hard
+
 "joi@npm:^13.x":
   version: 13.7.0
   resolution: "joi@npm:13.7.0"
@@ -15409,6 +15461,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"module-alias@npm:2.2.3":
+  version: 2.2.3
+  resolution: "module-alias@npm:2.2.3"
+  checksum: 6169187f69de8dcf8af8fab4d9e53ada6338a43f7670d38d0b27a089c28f9eb18d85a6fd46f11b54c63079a68449b85d071d7db0ac067f9f7faedbcd6231456d
+  languageName: node
+  linkType: hard
+
 "module-details-from-path@npm:^1.0.3":
   version: 1.0.3
   resolution: "module-details-from-path@npm:1.0.3"
@@ -18126,19 +18185,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pug-code-gen@npm:^3.0.2":
-  version: 3.0.2
-  resolution: "pug-code-gen@npm:3.0.2"
+"pug-code-gen@npm:^3.0.3":
+  version: 3.0.3
+  resolution: "pug-code-gen@npm:3.0.3"
   dependencies:
     constantinople: ^4.0.1
     doctypes: ^1.1.0
     js-stringify: ^1.0.2
     pug-attrs: ^3.0.0
-    pug-error: ^2.0.0
-    pug-runtime: ^3.0.0
+    pug-error: ^2.1.0
+    pug-runtime: ^3.0.1
     void-elements: ^3.1.0
     with: ^7.0.0
-  checksum: 1644d3a4d673392794248749eb146299704639a8197746454b7d03b240b83ee102f25b76d203381501e283be3927ab01eb3f4563ff51c45a478de1f3435a400d
+  checksum: 7a494887eb2cbe88c90cd45f818729046d3cb186d5101770e158cc14be9cd5e664809c600182756ebbcab2b27caba87ac8b743e0ad0789799b1925a850612947
   languageName: node
   linkType: hard
 
@@ -18146,6 +18205,13 @@ __metadata:
   version: 2.0.0
   resolution: "pug-error@npm:2.0.0"
   checksum: c5372d018c897c1d6a141dd803c50957feecfda1f3d84a6adc6149801315d6c7f8c28b05f3e186d98d774fc9718699d1e1caa675630dd3c4453f8c5ec4e4a986
+  languageName: node
+  linkType: hard
+
+"pug-error@npm:^2.1.0":
+  version: 2.1.0
+  resolution: "pug-error@npm:2.1.0"
+  checksum: e084890365f1c03a828437c1dcf641598f5754bc0fdde625a8b2529c52fbda0caa89e0e29e9124d665cfd3915bb8916011787861930a0dcf250d46e1a33c1e5c
   languageName: node
   linkType: hard
 
@@ -18227,10 +18293,10 @@ __metadata:
   linkType: hard
 
 "pug@npm:^3.0.2":
-  version: 3.0.2
-  resolution: "pug@npm:3.0.2"
+  version: 3.0.3
+  resolution: "pug@npm:3.0.3"
   dependencies:
-    pug-code-gen: ^3.0.2
+    pug-code-gen: ^3.0.3
     pug-filters: ^4.0.0
     pug-lexer: ^5.0.1
     pug-linker: ^4.0.0
@@ -18238,7 +18304,7 @@ __metadata:
     pug-parser: ^6.0.0
     pug-runtime: ^3.0.1
     pug-strip-comments: ^2.0.0
-  checksum: 3e1a3d48897c0c7dedd4f959ce8afaf6417a63756b149e1b5382bef16de5792ec7c7ae6a7d41641059cb149520f20b0d1ecf57014c0661526e96f0bad88541e5
+  checksum: b825497b44fb373625680c0279199f964fd7446351f5570087d4b7f73e7855434ff075d3085fd11c08473dc355719b0613d20e3d44f197b1809736c1d5f8370b
   languageName: node
   linkType: hard
 
@@ -21998,6 +22064,7 @@ __metadata:
     immutable: 4.1.0
     imports-loader: 4.0.0
     ip-address: 8.1.0
+    joi: 17.13.3
     jquery-events-to-dom-events: 1.1.0
     js-string-escape: 1.0.1
     jsonwebtoken: 8.5.1
@@ -22015,6 +22082,7 @@ __metadata:
     mobx-react: 7.5.2
     mocha: 10.0.0
     mocha-lcov-reporter: 1.3.0
+    module-alias: 2.2.3
     moment: 2.29.4
     moment-duration-format: 2.3.2
     moment-timezone: 0.5.34
