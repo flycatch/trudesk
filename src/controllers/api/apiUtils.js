@@ -12,6 +12,7 @@
  *  Copyright (c) 2014-2019. All rights reserved.
  */
 
+const logger = require('@/logger')
 const _ = require('lodash')
 
 const apiUtils = {}
@@ -30,7 +31,7 @@ apiUtils.sendApiError_InvalidPostData = function (res) {
   return apiUtils.sendApiError(res, 400, 'Invalid Post Data')
 }
 
-apiUtils.generateJWTToken = function (dbUser, callback) {
+apiUtils.generateJWTToken = async function (dbUser) {
   const nconf = require('nconf')
   const jwt = require('jsonwebtoken')
 
@@ -49,18 +50,15 @@ apiUtils.generateJWTToken = function (dbUser, callback) {
 
   const secret = nconf.get('tokens') ? nconf.get('tokens').secret : false
   const expires = nconf.get('tokens') ? nconf.get('tokens').expires : 3600
-  if (!secret || !expires) return callback({ message: 'Invalid Server Configuration' })
+  if (!secret || !expires) {
+     throw new Error('Invalid Server Configuration')
+  }
 
-  require('../../models/group').getAllGroupsOfUserNoPopulate(dbUser._id, function (err, grps) {
-    if (err) return callback(err)
-    resUser.groups = grps.map(function (g) {
-      return g._id
-    })
+  const groups = await require('../../models/group').getAllGroupsOfUserNoPopulate(dbUser._id)
+  resUser.groups = groups.map(g => g._id)
 
-    const token = jwt.sign({ user: resUser }, secret, { expiresIn: expires })
-
-    return callback(null, { token: token, refreshToken: refreshToken })
-  })
+  const token = jwt.sign({ user: resUser }, secret, { expiresIn: expires })
+  return { token, refreshToken }
 }
 
 apiUtils.stripUserFields = function (user) {
@@ -71,6 +69,40 @@ apiUtils.stripUserFields = function (user) {
   user.iOSDeviceTokens = undefined
 
   return user
+}
+
+/**
+ * @callback AsyncRequestHandler
+ * @param {import('express').Request} req
+ * @param {import('express').Response} res
+ * @param {import('express').NextFunction |  undefined} next
+ * @returns {Promise<any>}
+ *
+ * @callback ErrHandler
+ * @param {Error | undefined} err
+ * @returns {void}
+ */
+
+/**
+ * A function wraps error handling for request handlers. 
+ * By default this returns a 400 with error message.
+ *
+ * @param {AsyncRequestHandler} handler - an asynchrounous request handler
+ * @param {ErrHandler=} errHandler - An optional callback that handles error
+ *
+ * @returns {import('express').RequestHandler} An express request handler that wraps {@link AsyncRequestHandler}
+ */
+apiUtils.catchAsync = function (handler, errHandler) {
+    return async (req, res, next) => {
+        handler(req, res, next)
+            .catch(err => {
+                if (errHandler) {
+                    return errHandler(err)
+                }
+                logger.warn(`failed ${req.path} - ${err}`)
+                return this.sendApiError(res, 500, err)
+            })
+    }
 }
 
 module.exports = apiUtils

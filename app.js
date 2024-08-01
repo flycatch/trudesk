@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+require('module-alias/register')
+
 /*
  *       .                             .o8                     oooo
  *    .o8                             "888                     `888

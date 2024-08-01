@@ -14,6 +14,7 @@
 
 module.exports = function (middleware, router, controllers) {
   // Shorten Vars
+
   const apiv2Auth = middleware.apiv2
   const apiv2 = controllers.api.v2
   const isAdmin = middleware.isAdmin
@@ -88,4 +89,14 @@ module.exports = function (middleware, router, controllers) {
   router.get('/api/v2/es/status', apiv2Auth, isAdmin, apiv2.elasticsearch.status)
 
   router.get('/api/v2/mailer/check', apiv2Auth, isAdmin, apiv2.mailer.check)
+  
+  // FAQ
+  /** @type {typeof import('../v2/faq')} */
+  const faq = apiv2.faq
+  router.post('/api/v2/faqs', apiv2Auth, isAdmin, faq.create)
+  router.put('/api/v2/faqs/:id', apiv2Auth, isAdmin, faq.update)
+  router.delete('/api/v2/faqs/:id', apiv2Auth, isAdmin, faq.delete)
+
+  // PUBLIC FAQ
+  router.get('/api/v2/public/faqs', faq.findAll)
 }

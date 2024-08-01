@@ -60,6 +60,7 @@
     "immutable": "4.1.0",
     "imports-loader": "4.0.0",
     "ip-address": "8.1.0",
+    "joi": "17.13.3",
     "jquery-events-to-dom-events": "1.1.0",
     "js-string-escape": "1.0.1",
     "jsonwebtoken": "8.5.1",
@@ -72,6 +73,7 @@
     "mkdirp": "1.0.4",
     "mobx": "6.6.1",
     "mobx-react": "7.5.2",
+    "module-alias": "2.2.3",
     "moment": "2.29.4",
     "moment-duration-format": "2.3.2",
     "moment-timezone": "0.5.34",
@@ -271,5 +273,9 @@
     }
   },
   "snyk": true,
-  "packageManager": "yarn@3.2.1"
+  "packageManager": "yarn@3.2.1",
+  "_moduleAliases": {
+    "@": "./src"
+  }
+
 }
