@@ -1,4 +1,3 @@
-version: '2.1'
 services:
   trudesk:
     image: polonel/trudesk:1
@@ -43,6 +42,16 @@ services:
       - "9300:9300"
     volumes:
       - elasticsearch:/usr/share/elasticsearch/data
+
+  fake-smtp-server:
+    container_name: dev-fake-smtp-server
+    image: rnwood/smtp4dev
+    restart: on-failure
+    profiles:
+      - dev
+    ports:
+      - "3000:80"
+      - "2525:25"
 volumes:
   trudesk_uploads:
   trudesk_backups:
