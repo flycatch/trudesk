@@ -693,7 +693,7 @@ apiTickets.createPublicTicket = function (req, res) {
 
       const userData = {}
       userData.newUser = !existingUser
-      userData.user = result.user 
+      userData.savedUser = result.user 
       if (!existingUser) {
         userData.chancepass = plainTextPass
       }
