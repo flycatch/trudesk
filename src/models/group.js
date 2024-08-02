@@ -142,6 +142,15 @@ groupSchema.statics.getGroupByName = function (name, callback) {
   return q.exec(callback)
 }
 
+groupSchema.statics.getGroupByNameNoPopulate = async function(name) {
+  if (_.isUndefined(name) || name.length < 1) {
+    throw new Error('Invalid Group Name - GroupSchema.GetGroupByName()')
+  }
+  return this.model(COLLECTION)
+    .findOne({ name })
+    .exec()
+}
+
 groupSchema.statics.getWithObject = function (obj, callback) {
   var limit = obj.limit ? Number(obj.limit) : 100
   var page = obj.page ? Number(obj.page) : 0
