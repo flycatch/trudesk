@@ -117,7 +117,8 @@ module.exports = function (middleware, router, controllers) {
   const checkOrigin = middleware.checkOrigin
 
   router.post('/api/v1/public/users/checkemail', checkCaptcha, checkOrigin, apiCtrl.users.checkEmail)
-  router.post('/api/v1/public/tickets/create', checkCaptcha, checkOrigin, apiCtrl.tickets.createPublicTicket)
+  // TODO: renable some kind of user verification instead of captcha
+  router.post('/api/v1/public/tickets/create', apiCtrl.tickets.createPublicTicket)
   router.post('/api/v1/public/account/create', checkCaptcha, checkOrigin, apiCtrl.users.createPublicAccount)
 
   // Groups
