@@ -103,7 +103,7 @@ module.exports = function (middleware, router, controllers) {
     tagSchema.countDocuments({}, function (err, count) {
       if (err) return res.status(500).json({ success: false, error: err })
 
-      return res.json({ success: true, count: count })
+      return res.json({ success: true, count })
     })
   })
 
