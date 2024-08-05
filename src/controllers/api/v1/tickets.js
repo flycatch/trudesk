@@ -591,7 +591,11 @@ apiTickets.createPublicTicket = function (req, res) {
           role: roleDefault.value
         })
 
-        return await user.save()
+        user = await user.save()
+        emitter.emit('public:user:create', {
+          user, plainTextPass
+        })
+        return user
       },
 
       async function (user) {

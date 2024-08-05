@@ -31,6 +31,7 @@ const COLLECTION = 'accounts'
  * @module models/user
  * @class User
  *
+ * @typedef {object} User
  * @property {object} _id ```Required``` ```unique``` MongoDB Object ID
  * @property {String} username ```Required``` ```unique``` Username of user
  * @property {String} password ```Required``` Bcrypt password
@@ -49,7 +50,7 @@ const COLLECTION = 'accounts'
  * @property {Boolean} preferences.autoRefreshTicketGrid Enable the auto refresh of the ticket grid.
  * @property {Boolean} deleted Account Deleted
  */
-const userSchema = mongoose.Schema({
+const userSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true, lowercase: true },
   password: { type: String, required: true, select: false },
   fullname: { type: String, required: true, index: true },
