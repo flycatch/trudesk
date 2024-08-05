@@ -534,11 +534,14 @@ apiTickets.createPublicTicket = function (req, res) {
   const chance = new Chance()
   const response = {}
   response.success = true
+
+  /** @type {{user: any, ticket: any}} */
   const postData = req.body
   if (!_.isObject(postData)) {
     return res.status(400).json({ success: false, error: 'Invalid Post Data' })
   }
-  let user, group, ticket, plainTextPass
+  let plainTextPass
+  let existingUser = false
 
   const settingSchema = require('../../../models/setting')
 
@@ -566,54 +569,55 @@ apiTickets.createPublicTicket = function (req, res) {
           return next(null, roleDefault)
         })
       },
-      function (roleDefault, next) {
+      async function (roleDefault) {
         const UserSchema = require('../../../models/user')
+        let user = await UserSchema.getUserByEmail(postData.user.email)
+        if (user) {
+          existingUser = true
+          return user
+        }
+
         plainTextPass = chance.string({
           length: 6,
           pool: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890'
         })
 
-        const sanitizedFullname = xss(postData.user.fullname)
-
         user = new UserSchema({
           username: postData.user.email,
           password: plainTextPass,
-          fullname: sanitizedFullname,
+          fullname: xss(postData.user.fullname),
           email: postData.user.email,
           accessToken: chance.hash(),
           role: roleDefault.value
         })
 
-        user.save(function (err, savedUser) {
-          if (err) return next(err)
-
-          return next(null, savedUser)
-        })
+        return await user.save()
       },
 
-      function (savedUser, next) {
+      async function (user) {
         // Group Creation
         const GroupSchema = require('../../../models/group')
-        group = new GroupSchema({
-          name: savedUser.email,
-          members: [savedUser._id],
-          sendMailTo: [savedUser._id],
+        if (existingUser) {
+          const group = await GroupSchema.getGroupByNameNoPopulate(user.email)
+          if (group) {
+            return [group, user]
+          }
+        }
+        const group = await new GroupSchema({
+          name: user.email,
+          members: [user._id],
+          sendMailTo: [user._id],
           public: true
-        })
-
-        group.save(function (err, group) {
-          if (err) return next(err)
-
-          return next(null, group, savedUser)
-        })
+        }).save()
+        return [group, user]
       },
-      function (group, savedUser, next) {
+      function ([group, user], next) {
         const settingsSchema = require('../../../models/setting')
         settingsSchema.getSettingByName('ticket:type:default', function (err, defaultType) {
           if (err) return next(err)
 
           if (defaultType.value) {
-            return next(null, defaultType.value, group, savedUser)
+            return next(null, defaultType.value, group, user)
           }
 
           return next('Failed: Invalid Default Ticket Type.')
@@ -649,7 +653,7 @@ apiTickets.createPublicTicket = function (req, res) {
           description: 'Ticket was created.',
           owner: savedUser._id
         }
-        ticket = new TicketSchema({
+        const ticket = new TicketSchema({
           owner: savedUser._id,
           group: group._id,
           type: ticketType._id,
@@ -687,9 +691,16 @@ apiTickets.createPublicTicket = function (req, res) {
       delete result.user.password
       result.user.password = undefined
 
+      const userData = {}
+      userData.newUser = !existingUser
+      userData.savedUser = result.user 
+      if (!existingUser) {
+        userData.chancepass = plainTextPass
+      }
+
       return res.json({
         success: true,
-        userData: { savedUser: result.user, chancepass: plainTextPass },
+        userData,
         ticket: result.ticket
       })
     }
