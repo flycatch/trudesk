@@ -25,9 +25,12 @@ const socketEvents = require('../socketio/socketEventConsts')
 const notifications = require('../notifications') // Load Push Events
 
 const eventTicketCreated = require('./events/event_ticket_created')
+const eventPublicUserCreated = require('@/emitter/events/event_public_user_created')
 
 ;(function () {
   notifications.init(emitter)
+
+  emitter.on('public:user:create', eventPublicUserCreated)
 
   emitter.on('ticket:created', async function (data) {
     await eventTicketCreated(data)

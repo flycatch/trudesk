@@ -1,0 +1,8 @@
+{
+  "name": "public-account-created",
+  "displayName": "Account Created",
+  "description": "Email notification sent when a public user account is created.",
+  "subject": "Account created",
+  "data": {
+  }
+}
