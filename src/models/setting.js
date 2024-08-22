@@ -16,10 +16,22 @@ const mongoose = require('mongoose')
 
 const COLLECTION = 'settings'
 
-const settingSchema = mongoose.Schema({
+/**
+ * @typedef {object} ISettings
+ * @property {Required<string>} name - the setting name
+ * @property {Required<any>} value - the setting value
+ *
+ * @typedef {mongoose.Document & ISettings} Setting
+ * @typedef {mongoose.Model<Setting> & typeof statics} SettingModel
+ */
+
+/** @type {mongoose.Schema<Setting, SettingModel>} */
+const settingSchema = new mongoose.Schema({
   name: { type: String, required: true, unique: true },
   value: { type: mongoose.Schema.Types.Mixed, required: true }
 })
+
+const statics = {}
 
 settingSchema.statics.getSettings = function (callback) {
   const q = this.model(COLLECTION)
@@ -48,6 +60,26 @@ settingSchema.statics.getSettingByName = async function (name, callback) {
   })
 }
 
+/**
+  * Finds the provided setting keys and returns as an object with
+  * keys as the name of the setting and value of the key as the setting value
+  *
+  * @param {string | Array.<string>} names The setting keys to select
+  * @returns {Promise.<Object.<string, any>>} The setting object
+  */
+statics.getSettingsObjectByName = async (names) => {
+    /** @type {Array.<Setting>} */
+    const settings = await Setting.find({ name: names }).exec()
+    if (!settings) {
+        return {}
+    }
+
+    /** @type {Object.<string, any>} */
+    const obj = {}
+    settings.forEach(item => obj[item.name.replace(':','_')] = item.value)
+    return obj
+}
+
 settingSchema.statics.getSettingsByName = async function (names, callback) {
   return new Promise((resolve, reject) => {
     ;(async () => {
@@ -68,4 +100,8 @@ settingSchema.statics.getSettingsByName = async function (names, callback) {
 
 settingSchema.statics.getSetting = settingSchema.statics.getSettingByName
 
-module.exports = mongoose.model(COLLECTION, settingSchema)
+settingSchema.statics = statics
+
+/** @type {SettingModel} */
+const Setting = mongoose.model(COLLECTION, settingSchema)
+module.exports = Setting
