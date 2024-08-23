@@ -1,3 +1,8 @@
+
+export type StrategyTypes = 
+  'highest-score' |
+  'threshold'
+
 export type StrategyResponse = {
     labels: string[]
 }

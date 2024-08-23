@@ -1,9 +1,7 @@
 const logger = require('@/logger')
 
-/** @typedef {import("./types").HighestScoreStrategyOptions} HighestScoreStrategyOptions */
-/** @typedef {import("./types").Strategy.<HighestScoreStrategyOptions>} Strategy */
 
-/** @type {Strategy} */
+/** @type {import('./types').Strategy.<import('./types').HighestScoreStrategyOptions>} */
 const HighScoreStrategy = {}
 
 HighScoreStrategy.decide = (labels, scores, options) => {
