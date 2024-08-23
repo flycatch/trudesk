@@ -79,7 +79,7 @@ statics.getSettingsObjectByName = async (names) => {
 
   /** @type {Object.<string, any>} */
   const obj = {}
-  settings.forEach(item => obj[item.name.replace(':', '_')] = item.value)
+  settings.forEach(item => obj[item.name.replace(/:/g, '_')] = item.value)
   return obj
 }
 
