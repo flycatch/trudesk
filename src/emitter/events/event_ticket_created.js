@@ -185,28 +185,38 @@ const saveNotification = async (user, ticket) => {
   await notification.save()
 }
 
-module.exports = async data => {
+/**
+  * Send notifications via email and socket to the respective clients
+  *
+  * @param {any} ticket
+  * @param {Object.<string, any>} settings
+  * @return {Promise.<void>}
+  */
+const sendNotifications = async (ticket, settings) => {
+  try {
+    if (settings.mailer_enable) {
+      const emails = await parseMemberEmails(ticket)
+      await sendMail(ticket, emails, settings.gen_siteurl, settings.beta_email ?? false)
+    }
+
+    if (ticket.group.public) {
+      await createPublicNotification(ticket)
+    } else {
+      await createNotification(ticket)
+    }
+    util.sendToAllConnectedClients(io, socketEvents.TICKETS_CREATED, ticket)
+  } catch (e) {
+    logger.warn(`[trudesk:events:ticket:created] - Error in sending notifications: ${e}`)
+  }
+}
+
+
+module.exports = async (data) => {
   const ticketObject = data.ticket
   const hostname = data.hostname
 
-  try {
-    const ticket = await Ticket.getTicketById(ticketObject._id)
-    const settings = await Setting.getSettingsByName(['gen:siteurl', 'mailer:enable', 'beta:email'])
+  const ticket = await Ticket.getTicketById(ticketObject._id)
+  const settings = await Setting.getSettingsObjectByName(['gen:siteurl', 'mailer:enable', 'beta:email'])
 
-    const baseUrl = head(filter(settings, ['name', 'gen:siteurl'])).value
-    let mailerEnabled = head(filter(settings, ['name', 'mailer:enable']))
-    mailerEnabled = !mailerEnabled ? false : mailerEnabled.value
-    let betaEnabled = head(filter(settings, ['name', 'beta:email']))
-    betaEnabled = !betaEnabled ? false : betaEnabled.value
-
-    const [emails] = await Promise.all([parseMemberEmails(ticket)])
-
-    if (mailerEnabled) await sendMail(ticket, emails, baseUrl, betaEnabled)
-    if (ticket.group.public) await createPublicNotification(ticket)
-    else await createNotification(ticket)
-
-    util.sendToAllConnectedClients(io, socketEvents.TICKETS_CREATED, ticket)
-  } catch (e) {
-    logger.warn(`[trudesk:events:ticket:created] - Error: ${e}`)
-  }
+  await sendNotifications(ticket, settings)
 }
