@@ -23,6 +23,7 @@ const TaggerClient = {}
 * @returns {Promise.<ClassifyResponse>}
 */
 TaggerClient.classify = async (data, host, auth) => {
+    logger.info('requesting tagging API')
     const url = new URL('/api/v2/classify', host).href
     const response = await axios.request({
         url,
