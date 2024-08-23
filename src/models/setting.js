@@ -33,31 +33,34 @@ const settingSchema = new mongoose.Schema({
 
 const statics = {}
 
-settingSchema.statics.getSettings = function (callback) {
-  const q = this.model(COLLECTION)
-    .find()
-    .select('name value')
+/**
+ * @this {SettingModel}
+ * @param {function=} callback
+ * @returns {Promise.<Array.<Setting>>}
+ */
+statics.getSettings = function(callback) {
+  const q = Setting.find().select('name value')
 
   return q.exec(callback)
 }
 
-settingSchema.statics.getSettingByName = async function (name, callback) {
-  return new Promise((resolve, reject) => {
-    ;(async () => {
-      const q = this.model(COLLECTION).findOne({ name })
+/**
+ * @param {string} name
+ * @param {function=} callback
+ * @return {Promise.<Setting>}
+ */
+statics.getSettingByName = async function(name, callback) {
+  const q = Setting.findOne({ name })
+  try {
+    const result = await q.exec()
+    if (typeof callback === 'function') callback(null, result)
 
-      try {
-        const result = await q.exec()
-        if (typeof callback === 'function') callback(null, result)
+    return result
+  } catch (e) {
+    if (typeof callback === 'function') callback(e)
 
-        return resolve(result)
-      } catch (e) {
-        if (typeof callback === 'function') callback(e)
-
-        return reject(e)
-      }
-    })()
-  })
+    throw e
+  }
 }
 
 /**
@@ -68,37 +71,38 @@ settingSchema.statics.getSettingByName = async function (name, callback) {
   * @returns {Promise.<Object.<string, any>>} The setting object
   */
 statics.getSettingsObjectByName = async (names) => {
-    /** @type {Array.<Setting>} */
-    const settings = await Setting.find({ name: names }).exec()
-    if (!settings) {
-        return {}
-    }
+  /** @type {Array.<Setting>} */
+  const settings = await Setting.find({ name: names }).exec()
+  if (!settings) {
+    return {}
+  }
 
-    /** @type {Object.<string, any>} */
-    const obj = {}
-    settings.forEach(item => obj[item.name.replace(':','_')] = item.value)
-    return obj
+  /** @type {Object.<string, any>} */
+  const obj = {}
+  settings.forEach(item => obj[item.name.replace(':', '_')] = item.value)
+  return obj
 }
 
-settingSchema.statics.getSettingsByName = async function (names, callback) {
-  return new Promise((resolve, reject) => {
-    ;(async () => {
-      try {
-        const q = this.model(COLLECTION).find({ name: names })
-        const result = await q.exec()
-        if (typeof callback === 'function') callback(null, result)
+/**
+ * @param {string | string[]} names
+ * @param {function=} callback
+ * @returns {Promise.<Array.<Setting>>}
+ */
+statics.getSettingsByName = async function(names, callback) {
+  try {
+    const q = Setting.find({ name: names })
+    const result = await q.exec()
+    if (typeof callback === 'function') callback(null, result)
 
-        return resolve(result)
-      } catch (e) {
-        if (typeof callback === 'function') callback(e)
+    return result
+  } catch (e) {
+    if (typeof callback === 'function') callback(e)
 
-        return reject(e)
-      }
-    })()
-  })
+    throw e
+  }
 }
 
-settingSchema.statics.getSetting = settingSchema.statics.getSettingByName
+statics.getSetting = statics.getSettingByName
 
 settingSchema.statics = statics
 
