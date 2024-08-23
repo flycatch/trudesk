@@ -13,7 +13,7 @@
  */
 
 const path = require('path')
-const { head, filter, flattenDeep, concat, uniq, uniqBy, map, chain } = require('lodash')
+const { flattenDeep, concat, uniq, uniqBy, map, chain } = require('lodash')
 const logger = require('../../logger')
 const Ticket = require('../../models/ticket')
 const User = require('../../models/user')
@@ -31,6 +31,7 @@ const socketUtils = require('../../helpers/utils')
 const sharedVars = require('../../socketio/index').shared
 const socketEvents = require('../../socketio/socketEventConsts')
 const util = require('../../helpers/utils')
+const { tagTicket } = require('@/services/autotagger')
 
 const sendSocketUpdateToUser = (user, ticket) => {
   socketUtils.sendToUser(
@@ -211,12 +212,36 @@ const sendNotifications = async (ticket, settings) => {
 }
 
 
+/**
+  * Tags tickets using tagger API
+  *
+  * @param {any} ticket
+  * @param {Object.<string, any>} settings
+  * @return {Promise.<void>}
+  */
+const autoTagTicket = async (ticket, settings) => {
+  try {
+    if (!settings.autotagger_enable) {
+      return
+    }
+    const tags = await tagTicket(ticket)
+    if (!tags) {
+      logger.warn(`[trudesk:events:ticket:created] - Failed to tag the ticket ${ticket._id}`)
+      return
+    }
+    ticket.tags = tags
+    await ticket.save()
+  } catch (e) {
+    logger.warn(`[trudesk:events:ticket:created] - Error in autotagging : ${e}`)
+  }
+}
+
 module.exports = async (data) => {
   const ticketObject = data.ticket
-  const hostname = data.hostname
 
   const ticket = await Ticket.getTicketById(ticketObject._id)
-  const settings = await Setting.getSettingsObjectByName(['gen:siteurl', 'mailer:enable', 'beta:email'])
+  const settings = await Setting.getSettingsObjectByName(['gen:siteurl', 'mailer:enable', 'beta:email', 'autotagger:enable'])
 
   await sendNotifications(ticket, settings)
+  await autoTagTicket(ticket, settings)
 }
