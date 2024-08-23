@@ -26,8 +26,8 @@ const tagTicket = async (ticket) => {
     tagger_host,
     tagger_preferences,
     tagger_basictoken,
-    tagger_strategy,
-    tagger_strategy_options,
+    tagger_strategy = 'highest-score',
+    tagger_strategy_options = { count: 3 },
   } = await Setting.getSettingsObjectByName([
     'tagger:host',
     'tagger:preferences',
