@@ -41,6 +41,7 @@ const tagTicket = async (ticket) => {
     return undefined 
   }
 
+  /** @type {Array.<any>} */
   const tags = !!tagger_preferences
     ? await Tag.getTagByNames(tagger_preferences)
     : await Tag.getTags()
@@ -58,7 +59,7 @@ const tagTicket = async (ticket) => {
   const classificationStrategy = ClassifierStrategyFactory.create(tagger_strategy)
   const { labels } = classificationStrategy.decide(response.labels, response.scores, tagger_strategy_options)
 
-  return tags.filter(tag => labels.includes(tag.name));
+  return labels.map(label => tags.find(tag => tag.name === label))
 }
 
 module.exports = {

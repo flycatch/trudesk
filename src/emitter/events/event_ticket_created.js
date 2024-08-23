@@ -224,6 +224,7 @@ const autoTagTicket = async (ticket, settings) => {
     if (!settings.autotagger_enable) {
       return
     }
+    logger.info('[CreateTicketEvent::autoTagTicket] auto tagging ticket')
     const tags = await tagTicket(ticket)
     if (!tags) {
       logger.warn(`[trudesk:events:ticket:created] - Failed to tag the ticket ${ticket._id}`)

@@ -23,7 +23,7 @@ TopPercentStrategy.decide = (labels, scores, options) => {
       .map((label, index) => ({ label, score: scores[index] }))
       .sort((a, b) => b.score - a.score)
       .map(label => label.label)
-      .filter((_, index) => index <= topNpercentCount)
+      .slice(0, topNpercentCount)
   }
 }
 
