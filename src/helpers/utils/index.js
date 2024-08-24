@@ -17,6 +17,7 @@ const xss = require('xss')
 const fs = require('fs')
 const winston = require('../../logger')
 const piexifjs = require('piexifjs')
+const { setTimeout } = require('timers/promises')
 
 const MAX_FIELD_TEXT_LENGTH = 255
 const MAX_SHORT_FIELD_TEXT_LENGTH = 25
@@ -104,3 +105,66 @@ module.exports.disconnectAllClients = function (io) {
     io.sockets.sockets[sock].disconnect(true)
   })
 }
+
+
+/**
+ * @typedef {object} RetryOptions
+ * @property {number=} maxRetries
+ * @property {number=} initialDelay
+ * @property {number=} expoentialBase
+ * @property {boolean=} jitter
+ * @property {Array.<number>=} retryOn - The status codes on which the request should be retried
+ */
+
+/** 
+ * Adds expoential Retry to Axios instance using interceptors.
+ *
+ * @param {import('axios').AxiosInstance} instance The axios instance to apply retry
+ * @param {RetryOptions=} options - The retry options
+ * The default options are:
+ *  - maxRetries: 10 - The max amount retries after which the request fails
+ *  - initialDelay: 0.5s - the initial delay before the first retry request
+ *  - expoentialBase: 1.5 - the exponential base for calculating delays
+ *  - jitter: true - weather or not to apply random delay to calculated seconds
+ *  - retryOn : 408, 425, 429, 500, 502, 503, 504 - The status codes on which the request should be retried
+ * @returns {void}
+ * */
+module.exports.exponentialRetry = (instance, options = {}) => {
+  const {
+    jitter = true,
+    expoentialBase = 1.5,
+    initialDelay = 0.5,
+    maxRetries = 10,
+    retryOn = [408, 425, 429, 500, 502, 503, 504],
+  } = options
+
+  instance.interceptors.response.use(undefined, async (/** @type {import('axios').AxiosError} */ error) => {
+    /** @type {{ num_retries?: number; delay?: number; } & import('axios').AxiosRequestConfig} */
+    const config = error.config
+    const response = error.response
+    if (response && !retryOn.includes(response.status)) {
+      return Promise.reject(error)
+    }
+    if (!config.num_retries) {
+      config.num_retries = 1
+    }
+    if (!config.delay) {
+      config.delay = initialDelay
+    }
+    if (config.num_retries > maxRetries) {
+      winston.error("Max retries exeeded")
+      return Promise.reject(error)
+    }
+
+    let finalWaitTime = config.delay
+    if (jitter) {
+      const jitterFactor = Math.min(config.delay / 2, 1)
+      finalWaitTime += jitterFactor * -1 + 2 * jitterFactor * Math.random()
+    }
+    await setTimeout(finalWaitTime * 1000)
+    config.num_retries++
+    config.delay *= expoentialBase
+    return instance(error.config)
+  })
+}
+
