@@ -1,6 +1,7 @@
 const { default: axios } = require("axios")
 
 const logger = require('@/logger')
+const { exponentialRetry } = require("@/helpers/utils")
 
 /**
 * @typedef {object} ClassifyRequest
@@ -14,6 +15,9 @@ const logger = require('@/logger')
 
 
 const TaggerClient = {}
+
+const httpClient = axios.create()
+exponentialRetry(httpClient)
 
 /** 
 *
@@ -35,7 +39,6 @@ TaggerClient.classify = async (data, host, auth) => {
         data,
     })
     if (response.status != 200) {
-        // TODO: add retry
         logger.info(`Tagging API responded with ${JSON.stringify(response.data)}}`)
         const { error: { message, details } } = response.data
         throw new Error(`Tagging API failed: ${message} - ${JSON.stringify(details)}`)
