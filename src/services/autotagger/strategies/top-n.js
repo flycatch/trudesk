@@ -3,6 +3,9 @@ const logger = require('@/logger')
 const DEFAULT_TOP_COUNT = 3
 
 /** 
+ * Selects top `N` labels with the highest scores.
+ * By default top 3 are selected.
+ *
  * @type {import('./types').Strategy.<import('./types').TopNStrategyOptions>} 
  */
 const TopNStrategy = {}

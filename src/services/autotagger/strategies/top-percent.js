@@ -1,6 +1,11 @@
 const logger = require('@/logger')
 
-/** @type {import("./types").Strategy<import("./types").TopPercentStrategyOptions>} */
+/** 
+  * Selects top `N%` labels with the highes score.
+  * N is a percentage value that specifies the proportion of labels to select.
+  * By default the top 50% of labels will be selected.
+  *
+  * @type {import("./types").Strategy<import("./types").TopPercentStrategyOptions>} */
 const TopPercentStrategy = {}
 
 TopPercentStrategy.decide = (labels, scores, options) => {

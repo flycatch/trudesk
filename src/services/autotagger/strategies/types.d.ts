@@ -15,11 +15,14 @@ export type Strategy<T extends StrategyOptions = StrategyOptions> = {
 export interface StrategyOptions { }
 
 export interface ThresholdStrategyOptions extends StrategyOptions {
+    /** The minimum score labels should have */
     minimumThreshold?: number;
+    /** The maximum score labels should have */
     maximumThreshold?: number;
 }
 
 export interface TopPercentStrategyOptions extends StrategyOptions {
+    /** The percentage of lables to select */
     percentage: number
 }
 
@@ -29,6 +32,7 @@ export interface TopNearestStrategyOptions extends StrategyOptions {
 }
 
 export interface TopNStrategyOptions extends StrategyOptions {
+    /** The no:of top labels to select */
     count: number
 }
 

@@ -1,6 +1,13 @@
 const logger = require('@/logger')
 
-/** @type {import('./types').Strategy<import('./types').ThresholdStrategyOptions>} */
+/**
+ * Selects labels based on the provided thresholds.
+ * - If both min and max are provided, then all labels whose score is in between are selected
+ * - If only max is provided, then all labels whose score falls bellow max is selected
+ * - If only min is provided, then all lables whose scores are above the min is selected
+ *
+ * @type {import('./types').Strategy<import('./types').ThresholdStrategyOptions>} 
+ */
 const ThresholdStrategy = {}
 
 ThresholdStrategy.decide = (labels, scores, options) => {
