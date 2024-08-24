@@ -2,10 +2,12 @@ const logger = require('@/logger')
 
 const DEFAULT_TOP_COUNT = 3
 
-/** @type {import('./types').Strategy.<import('./types').HighestScoreStrategyOptions>} */
-const HighScoreStrategy = {}
+/** 
+ * @type {import('./types').Strategy.<import('./types').TopNStrategyOptions>} 
+ */
+const TopNStrategy = {}
 
-HighScoreStrategy.decide = (labels, scores, options) => {
+TopNStrategy.decide = (labels, scores, options) => {
   logger.info('tagging ticket using [highest-score] strategy')
   const count = options?.count ?? DEFAULT_TOP_COUNT
   if (!options || options.count === undefined) {
@@ -22,5 +24,5 @@ HighScoreStrategy.decide = (labels, scores, options) => {
 }
 
 module.exports = {
-  HighScoreStrategy
+  TopNStrategy
 } 

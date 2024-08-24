@@ -1,6 +1,6 @@
 
 export type StrategyTypes = 
-  'highest-score' |
+  'top-n' |
   'threshold' |
   'top-percent'
 
@@ -28,8 +28,7 @@ export interface TopNearestStrategyOptions extends StrategyOptions {
     selectTop: boolean
 }
 
-export interface HighestScoreStrategyOptions extends StrategyOptions {
-    /** Defines the no:of higest score entries to select */
+export interface TopNStrategyOptions extends StrategyOptions {
     count: number
 }
 
