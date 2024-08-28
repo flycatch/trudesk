@@ -73,6 +73,12 @@ tagSchema.statics.getTagsWithLimit = function (limit, page, callback) {
   return q.exec(callback)
 }
 
+tagSchema.statics.getTagByNames = async function (names) {
+  return await this.model(COLLECTION)
+      .find({ name: names })
+      .exec()
+}
+
 tagSchema.statics.getTagByName = function (tagName, callback) {
   var q = this.model(COLLECTION)
     .find({ name: tagName })

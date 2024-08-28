@@ -16,56 +16,96 @@ const mongoose = require('mongoose')
 
 const COLLECTION = 'settings'
 
-const settingSchema = mongoose.Schema({
+/**
+ * @typedef {object} ISettings
+ * @property {Required<string>} name - the setting name
+ * @property {Required<any>} value - the setting value
+ *
+ * @typedef {mongoose.Document & ISettings} Setting
+ * @typedef {mongoose.Model<Setting> & typeof statics} SettingModel
+ */
+
+/** @type {mongoose.Schema<Setting, SettingModel>} */
+const settingSchema = new mongoose.Schema({
   name: { type: String, required: true, unique: true },
   value: { type: mongoose.Schema.Types.Mixed, required: true }
 })
 
-settingSchema.statics.getSettings = function (callback) {
-  const q = this.model(COLLECTION)
-    .find()
-    .select('name value')
+const statics = {}
+
+/**
+ * @this {SettingModel}
+ * @param {function=} callback
+ * @returns {Promise.<Array.<Setting>>}
+ */
+statics.getSettings = function(callback) {
+  const q = Setting.find().select('name value')
 
   return q.exec(callback)
 }
 
-settingSchema.statics.getSettingByName = async function (name, callback) {
-  return new Promise((resolve, reject) => {
-    ;(async () => {
-      const q = this.model(COLLECTION).findOne({ name })
+/**
+ * @param {string} name
+ * @param {function=} callback
+ * @return {Promise.<Setting>}
+ */
+statics.getSettingByName = async function(name, callback) {
+  const q = Setting.findOne({ name })
+  try {
+    const result = await q.exec()
+    if (typeof callback === 'function') callback(null, result)
 
-      try {
-        const result = await q.exec()
-        if (typeof callback === 'function') callback(null, result)
+    return result
+  } catch (e) {
+    if (typeof callback === 'function') callback(e)
 
-        return resolve(result)
-      } catch (e) {
-        if (typeof callback === 'function') callback(e)
-
-        return reject(e)
-      }
-    })()
-  })
+    throw e
+  }
 }
 
-settingSchema.statics.getSettingsByName = async function (names, callback) {
-  return new Promise((resolve, reject) => {
-    ;(async () => {
-      try {
-        const q = this.model(COLLECTION).find({ name: names })
-        const result = await q.exec()
-        if (typeof callback === 'function') callback(null, result)
+/**
+  * Finds the provided setting keys and returns as an object with
+  * keys as the name of the setting and value of the key as the setting value
+  *
+  * @param {string | Array.<string>} names The setting keys to select
+  * @returns {Promise.<Object.<string, any>>} The setting object
+  */
+statics.getSettingsObjectByName = async (names) => {
+  /** @type {Array.<Setting>} */
+  const settings = await Setting.find({ name: names }).exec()
+  if (!settings) {
+    return {}
+  }
 
-        return resolve(result)
-      } catch (e) {
-        if (typeof callback === 'function') callback(e)
-
-        return reject(e)
-      }
-    })()
-  })
+  /** @type {Object.<string, any>} */
+  const obj = {}
+  settings.forEach(item => obj[item.name.replace(/:/g, '_')] = item.value)
+  return obj
 }
 
-settingSchema.statics.getSetting = settingSchema.statics.getSettingByName
+/**
+ * @param {string | string[]} names
+ * @param {function=} callback
+ * @returns {Promise.<Array.<Setting>>}
+ */
+statics.getSettingsByName = async function(names, callback) {
+  try {
+    const q = Setting.find({ name: names })
+    const result = await q.exec()
+    if (typeof callback === 'function') callback(null, result)
 
-module.exports = mongoose.model(COLLECTION, settingSchema)
+    return result
+  } catch (e) {
+    if (typeof callback === 'function') callback(e)
+
+    throw e
+  }
+}
+
+statics.getSetting = statics.getSettingByName
+
+settingSchema.statics = statics
+
+/** @type {SettingModel} */
+const Setting = mongoose.model(COLLECTION, settingSchema)
+module.exports = Setting

@@ -13,7 +13,7 @@
  */
 
 const path = require('path')
-const { head, filter, flattenDeep, concat, uniq, uniqBy, map, chain } = require('lodash')
+const { flattenDeep, concat, uniq, uniqBy, map, chain } = require('lodash')
 const logger = require('../../logger')
 const Ticket = require('../../models/ticket')
 const User = require('../../models/user')
@@ -31,6 +31,7 @@ const socketUtils = require('../../helpers/utils')
 const sharedVars = require('../../socketio/index').shared
 const socketEvents = require('../../socketio/socketEventConsts')
 const util = require('../../helpers/utils')
+const { tagTicket } = require('@/services/autotagger')
 
 const sendSocketUpdateToUser = (user, ticket) => {
   socketUtils.sendToUser(
@@ -185,28 +186,63 @@ const saveNotification = async (user, ticket) => {
   await notification.save()
 }
 
-module.exports = async data => {
-  const ticketObject = data.ticket
-  const hostname = data.hostname
-
+/**
+  * Send notifications via email and socket to the respective clients
+  *
+  * @param {any} ticket
+  * @param {Object.<string, any>} settings
+  * @return {Promise.<void>}
+  */
+const sendNotifications = async (ticket, settings) => {
   try {
-    const ticket = await Ticket.getTicketById(ticketObject._id)
-    const settings = await Setting.getSettingsByName(['gen:siteurl', 'mailer:enable', 'beta:email'])
+    if (settings.mailer_enable) {
+      const emails = await parseMemberEmails(ticket)
+      await sendMail(ticket, emails, settings.gen_siteurl, settings.beta_email ?? false)
+    }
 
-    const baseUrl = head(filter(settings, ['name', 'gen:siteurl'])).value
-    let mailerEnabled = head(filter(settings, ['name', 'mailer:enable']))
-    mailerEnabled = !mailerEnabled ? false : mailerEnabled.value
-    let betaEnabled = head(filter(settings, ['name', 'beta:email']))
-    betaEnabled = !betaEnabled ? false : betaEnabled.value
-
-    const [emails] = await Promise.all([parseMemberEmails(ticket)])
-
-    if (mailerEnabled) await sendMail(ticket, emails, baseUrl, betaEnabled)
-    if (ticket.group.public) await createPublicNotification(ticket)
-    else await createNotification(ticket)
-
+    if (ticket.group.public) {
+      await createPublicNotification(ticket)
+    } else {
+      await createNotification(ticket)
+    }
     util.sendToAllConnectedClients(io, socketEvents.TICKETS_CREATED, ticket)
   } catch (e) {
-    logger.warn(`[trudesk:events:ticket:created] - Error: ${e}`)
+    logger.warn(`[trudesk:events:ticket:created] - Error in sending notifications: ${e}`)
   }
+}
+
+
+/**
+  * Tags tickets using tagger API
+  *
+  * @param {any} ticket
+  * @param {Object.<string, any>} settings
+  * @return {Promise.<void>}
+  */
+const autoTagTicket = async (ticket, settings) => {
+  try {
+    if (!settings.autotagger_enable) {
+      return
+    }
+    logger.info('[CreateTicketEvent::autoTagTicket] auto tagging ticket')
+    const tags = await tagTicket(ticket)
+    if (!tags) {
+      logger.warn(`[trudesk:events:ticket:created] - Failed to tag the ticket ${ticket._id}`)
+      return
+    }
+    ticket.tags = tags
+    await ticket.save()
+  } catch (e) {
+    logger.warn(`[trudesk:events:ticket:created] - Error in autotagging : ${e}`)
+  }
+}
+
+module.exports = async (data) => {
+  const ticketObject = data.ticket
+
+  const ticket = await Ticket.getTicketById(ticketObject._id)
+  const settings = await Setting.getSettingsObjectByName(['gen:siteurl', 'mailer:enable', 'beta:email', 'autotagger:enable'])
+
+  await sendNotifications(ticket, settings)
+  await autoTagTicket(ticket, settings)
 }
