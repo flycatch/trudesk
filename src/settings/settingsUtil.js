@@ -126,6 +126,14 @@ util.getSettings = async callback => {
 
         s.accountsPasswordComplexity = parseSetting(settings, 'accountsPasswordComplexity:enable', true)
 
+        // Autotagger
+        s.autotaggerEnable = parseSetting(settings, 'autotagger:enable', false)
+        s.taggerHost = parseSetting(settings, 'tagger:host', '')
+        s.taggerPreferences = parseSetting(settings, 'tagger:preferences', '')
+        s.taggerBasictoken = parseSetting(settings, 'tagger:basictoken', '')
+        s.taggerStrategy = parseSetting(settings, 'tagger:strategy', 'top-n')
+        s.taggerStrategyOptions = parseSetting(settings, 'tagger:strategy:options', { count: 3})
+
         const types = await ticketTypeSchema.getTypes()
         content.data.ticketTypes = _.sortBy(types, o => o.name)
 
