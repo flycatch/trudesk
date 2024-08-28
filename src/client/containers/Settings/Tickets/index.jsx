@@ -49,6 +49,12 @@ class TicketsSettings extends React.Component {
     super(props)
 
     this.getTicketTags = this.getTicketTags.bind(this)
+    this.state = {
+      host: '',
+      topNNumber: '',
+      userName: '',
+      password: '',
+    }
   }
 
   static toggleEditPriority (e) {
@@ -144,6 +150,15 @@ class TicketsSettings extends React.Component {
     })
   }
 
+  onAllowAutoTaggingChange (e) {
+    this.props.updateSetting({
+      name: 'allowAutoTagging:enable',
+      value: e.target.checked,
+      stateName: 'allowAutoTagging',
+      noSnackbar: true
+    })
+  }
+
   onAllowAgentUserTicketsChange (e) {
     this.props.updateSetting({
       name: 'allowAgentUserTickets:enable',
@@ -186,6 +201,12 @@ class TicketsSettings extends React.Component {
     console.log(stat)
     console.log(stat.get('_id'))
     this.props.deleteStatus(stat.get('id'))
+  }
+
+  onInputValueChanged (e, stateName) {
+    this.setState({
+      [stateName]: e.target.value
+    })
   }
 
   onSubmitUpdateTag (e, tagId) {
@@ -458,6 +479,87 @@ class TicketsSettings extends React.Component {
         {/*    })}*/}
         {/*  </Zone>*/}
         {/*</SettingItem>*/}
+
+      <SettingItem
+        title={'Auto Tagging'}
+        subtitle={'Allow auto tagging of tickets.'}
+        component={
+          <EnableSwitch
+            stateName={'allowAutoTagging'}
+            label={'Enable'}
+            onChange={e => this.onAllowAutoTaggingChange(e)}
+            checked={this.getSetting('allowAutoTagging')}
+          />
+        }
+      >
+        <form onSubmit={e => console.log("submit form")}>
+          <div className={'uk-margin-medium-bottom'}>
+            <label>Host</label>
+            <input
+              type='text'
+              className={'md-input md-input-width-medium'}
+              name={'autoTaggingHost'}
+              disabled={!this.getSetting('allowAutoTagging')}
+              value={this.state.host}
+              onChange={e =>  this.onInputValueChanged(e, 'host')}
+            />
+          </div>
+          <div className='uk-margin-medium-bottom'>
+            <label>Username</label>
+            <input
+              type='text'
+              className={'md-input md-input-width-medium'}
+              name={'userName'}
+              disabled={!this.getSetting('allowAutoTagging')}
+              value={this.state.userName}
+              onChange={e => this.onInputValueChanged(e, 'userName')}
+            />
+          </div>
+          <div className='uk-margin-medium-bottom'>
+            <label>Auth Password</label>
+            <input
+              type='password'
+              className={'md-input md-input-width-medium'}
+              name={'password'}
+              disabled={!this.getSetting('allowAutoTagging')}
+              value={this.state.password}
+              onChange={e => this.onInputValueChanged(e, 'password')}
+            />
+          </div>
+          <div className='uk-margin-medium-bottom'>
+            <label>Top N number</label>
+            <input
+              type='text'
+              className={'md-input md-input-width-medium'}
+              name={'topNNumber'}
+              disabled={!this.getSetting('allowAutoTagging')}
+              value={this.state.topNNumber}
+              onChange={e => this.onInputValueChanged(e, 'topNNumber')}
+            />
+          </div>
+          <div className='uk-clearfix'>
+            {/* <Button
+              text={'Test Settings'}
+              type={'button'}
+              flat={true}
+              waves={true}
+              style={'primary'}
+              extraClass={'uk-float-left'}
+              disabled={!this.getSetting('mailerEnabled')}
+              onClick={e => this.testMailerSettings(e)}
+            /> */}
+            <Button
+              text={'Apply'}
+              type={'submit'}
+              style={'success'}
+              extraClass={'uk-float-right'}
+              disabled={!this.getSetting('allowAutoTagging')}
+              waves={true}
+              flat={true}
+            />
+          </div>
+        </form>
+      </SettingItem>
 
         <SettingItem
           title={'Ticket Tags'}
