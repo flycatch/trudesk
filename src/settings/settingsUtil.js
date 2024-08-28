@@ -127,7 +127,7 @@ util.getSettings = async callback => {
         s.accountsPasswordComplexity = parseSetting(settings, 'accountsPasswordComplexity:enable', true)
 
         // Autotagger
-        s.autotaggerEnable = parseSetting(settings, 'autotagger:enable', false)
+        s.autotagger = parseSetting(settings, 'autotagger:enable', false)
         s.taggerHost = parseSetting(settings, 'tagger:host', '')
         s.taggerPreferences = parseSetting(settings, 'tagger:preferences', '')
         s.taggerBasictoken = parseSetting(settings, 'tagger:basictoken', '')
