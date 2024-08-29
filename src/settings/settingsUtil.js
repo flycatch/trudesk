@@ -128,6 +128,7 @@ util.getSettings = async callback => {
 
         // Autotagger
         s.autotagger = parseSetting(settings, 'autotagger:enable', false)
+        s.taggerInference = parseSetting(settings, 'tagger:inference:enable', false)
         s.taggerHost = parseSetting(settings, 'tagger:host', '')
         s.taggerPreferences = parseSetting(settings, 'tagger:preferences', '')
         s.taggerBasictoken = parseSetting(settings, 'tagger:basictoken', '')
