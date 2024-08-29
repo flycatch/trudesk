@@ -738,7 +738,21 @@ ticketSchema.statics.getAll = function (callback) {
   return q.exec(callback)
 }
 
-ticketSchema.statics.getForCache = function (callback) {
+/**
+ * Gets tickets that do not have a tag assigned
+ */
+ticketSchema.statics.getNonTagged = async function() {
+  return this.model(COLLECTION)
+    .find({
+      $or: [
+        { tags: { $exists: false } },
+        { tags: null },
+        { tags: { $size: 0 } },
+      ]
+    }).exec()
+}
+
+ticketSchema.statics.getForCache = function(callback) {
   const self = this
   return new Promise((resolve, reject) => {
     ;(async () => {

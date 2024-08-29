@@ -19,6 +19,7 @@ const groupSchema = require('../models/group')
 const conversationSchema = require('../models/chat/conversation')
 const settingSchema = require('../models/setting')
 const logger = require('@/logger')
+const { AutotaggerJob } = require('@/taskrunner/autotagger-job')
 
 /**
  * @typedef {object} Task
@@ -36,6 +37,8 @@ taskRunner.init = function(callback) {
   // taskRunner.sendStats(function (err) {
   //   if (!err) setInterval(taskRunner.sendStats, 86400000) // 24 hours
   // })
+
+  taskRunner.registerCronJob('*/5 * * * *', AutotaggerJob)
 
   return callback()
 }
