@@ -15,8 +15,8 @@ AutotaggerJob.enable = async () => {
   return !!(enabled.value)
 }
 
-AutotaggerJob.task = async (...args) => {
-    logger.debug(`initiating autotagging, ${args}`)
+AutotaggerJob.task = async () => {
+    logger.debug('initiating autotagging')
     const tickets = await Ticket.getNonTagged()
 
     for (const ticket of tickets) {
