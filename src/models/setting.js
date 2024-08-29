@@ -31,6 +31,11 @@ const settingSchema = new mongoose.Schema({
   value: { type: mongoose.Schema.Types.Mixed, required: true }
 })
 
+settingSchema.post('save', async function(doc, next) {
+  const emitter = require('@/emitter')
+  emitter.emit('setting:updated', doc)
+})
+
 const statics = {}
 
 /**
