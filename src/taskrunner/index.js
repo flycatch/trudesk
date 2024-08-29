@@ -10,6 +10,7 @@
 */
 
 const _ = require('lodash')
+const { CronJob } = require('cron')
 const async = require('async')
 const request = require('request')
 const ticketSchema = require('../models/ticket')
@@ -17,10 +18,21 @@ const userSchema = require('../models/user')
 const groupSchema = require('../models/group')
 const conversationSchema = require('../models/chat/conversation')
 const settingSchema = require('../models/setting')
+const logger = require('@/logger')
+
+/**
+ * @typedef {object} Task
+ * @property {string} name
+ * @property {boolean | function():Promise.<boolean>} enable
+ * @property {function():Promise.<void>} task
+ */
 
 const taskRunner = {}
 
-taskRunner.init = function (callback) {
+/** @type {Object.<string, import('cron').CronJob>} */
+const jobs = {}
+
+taskRunner.init = function(callback) {
   // taskRunner.sendStats(function (err) {
   //   if (!err) setInterval(taskRunner.sendStats, 86400000) // 24 hours
   // })
@@ -121,6 +133,95 @@ taskRunner.sendStats = function (callback) {
       }
     )
   })
+}
+
+/**
+ * Resgisters a cron job and starts it if its enabled
+ *
+ * @param {string} pattern
+ * @param {Task} task
+ */
+taskRunner.registerCronJob = function(pattern, task) {
+  const name = task.name
+  logger.info(`registering job [${name}]`)
+  if (jobs[name]) {
+    logger.warn(`job [${name}] is already registered. Ignoring register request`)
+    return
+  }
+  try {
+    jobs[name] = CronJob.from({
+      cronTime: pattern,
+      onTick: () => {
+        task.task().catch(e => logger.error(`failed to run job [${name}]. Next run will be at ${jobs[name].nextDate().toUTC()}`, e))
+      },
+      start: false,
+      timeZone: 'UTC'
+    })
+    taskRunner.startCronJob(task)
+  } catch (e) {
+    logger.error(`failed to register job [${name}]`, e)
+  }
+}
+
+/**
+ * Starts the task if it is enabled
+ * @param {Task} task 
+ */
+taskRunner.startCronJob = function(task) {
+  const name = task.name
+  logger.info(`starting job [${name}]`)
+  if (!jobs[name]) {
+    logger.warn(`job [${name}] does not exists`)
+    return
+  }
+
+  if (jobs[name].running) {
+    logger.warn(`job [${name}] is already running`)
+    return
+  }
+
+  function start_job(/** @type {boolean} */enable) {
+      if (!enable) {
+        logger.warn(`job [${name}] is disabled. ignoring start request`)
+        return
+      }
+      jobs[name].start()
+      logger.info(`job [${name}] started. First execution at ${jobs[name].nextDate().toJSDate()}`)
+  }
+
+
+  if (typeof task.enable === 'function') {
+    task.enable()
+      .then(start_job)
+      .catch(e => logger.error(`failed to start job [${name}]`, e))
+    return
+  }
+
+  try {
+    start_job(task.enable)
+  } catch (e) {
+    logger.error(`failed to start job [${name}]`, e)
+  }
+}
+
+/**
+ * Stops the task if its already running
+ * @param {Task} task 
+ */
+taskRunner.stopCronJob = function(task) {
+  const name = task.name
+  logger.info(`stopping job [${name}].`)
+  if (!jobs[name]) {
+    logger.warn(`job [${name}] does not exists`)
+    return
+  }
+  const job = jobs[name]
+  if (!job.running) {
+    logger.warn(`job [${name}] is already stopped. Removing from memmory`)
+    return
+  }
+  job.stop()
+  logger.info(`job [${name}] stopped. Last execution was ${job.lastDate()}`)
 }
 
 module.exports = taskRunner
