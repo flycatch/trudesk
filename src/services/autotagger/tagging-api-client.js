@@ -7,6 +7,7 @@ const { exponentialRetry } = require("@/helpers/utils")
 * @typedef {object} ClassifyRequest
 * @property {string} text
 * @property {Array.<string>} labels
+* @property {boolean} use_inference
 *
 * @typedef {object} ClassifyResponse
 * @property {Array.<string>} labels

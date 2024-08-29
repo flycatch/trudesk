@@ -26,11 +26,14 @@ const notifications = require('../notifications') // Load Push Events
 
 const eventTicketCreated = require('./events/event_ticket_created')
 const eventPublicUserCreated = require('@/emitter/events/event_public_user_created')
+const eventSettingUpdated = require('@/emitter/events/event_setting_updated')
 
 ;(function () {
   notifications.init(emitter)
 
   emitter.on('public:user:create', eventPublicUserCreated)
+
+  emitter.on('setting:updated', eventSettingUpdated)
 
   emitter.on('ticket:created', async function (data) {
     await eventTicketCreated(data)
