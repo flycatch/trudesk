@@ -28,12 +28,14 @@ const tagTicket = async (ticket) => {
     tagger_basictoken,
     tagger_strategy = 'top-n',
     tagger_strategy_options = { count: 3 },
+    tagging_inference_enable = false
   } = await Setting.getSettingsObjectByName([
     'tagger:host',
     'tagger:preferences',
     'tagger:basictoken',
     'tagger:strategy',
-    'tagger:strategy:options'
+    'tagger:strategy:options',
+    'tagger:inference:enable'
   ])
 
   if (!tagger_host) {
@@ -54,6 +56,7 @@ const tagTicket = async (ticket) => {
   const response = await TaggerClient.classify({
     text: `${ticket.subject}\n${ticket.issue}`,
     labels: tags.map(tag => tag.name),
+    use_inference: tagging_inference_enable
   }, tagger_host, tagger_basictoken)
 
   const classificationStrategy = ClassifierStrategyFactory.create(tagger_strategy)
