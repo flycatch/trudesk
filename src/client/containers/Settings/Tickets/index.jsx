@@ -22,7 +22,7 @@ import axios from 'axios'
 import UIKit from 'uikit'
 import helpers from 'lib/helpers'
 
-import { updateSetting } from 'actions/settings'
+import { updateSetting, updateMultipleSettings } from 'actions/settings'
 import { getTagsWithPage, tagsUpdateCurrentPage, deleteStatus } from 'actions/tickets'
 import { showModal } from 'actions/common'
 
@@ -109,6 +109,27 @@ class TicketsSettings extends React.Component {
     }
   }
 
+  static getDerivedStateFromProps (nextProps, state) {
+    if (nextProps.settings) {
+      let stateObj = { ...state }
+      if (!state.host)
+        stateObj.host = nextProps.settings.getIn(['settings', 'taggerHost', 'value']) || ''
+      if (!state.topNNumber) {
+        const count = nextProps.settings.getIn(['settings', 'taggerStrategyOptions', 'value','count']) || '3'
+        stateObj.topNNumber = count.toString()
+      }
+      if (!state.userName ||  !state.password){
+        const [userName, password] = window.atob(nextProps.settings.getIn(['settings', 'taggerBasictoken', 'value']) || '').split(":")
+        stateObj.userName = userName
+        stateObj.password = password
+      }
+
+      return stateObj
+    }
+
+    return null
+  }
+
   getSetting (name) {
     return this.props.settings.getIn(['settings', name, 'value'])
       ? this.props.settings.getIn(['settings', name, 'value'])
@@ -152,9 +173,18 @@ class TicketsSettings extends React.Component {
 
   onAllowAutoTaggingChange (e) {
     this.props.updateSetting({
-      name: 'allowAutoTagging:enable',
+      name: 'autotagger:enable',
       value: e.target.checked,
-      stateName: 'allowAutoTagging',
+      stateName: 'autotagger',
+      noSnackbar: true
+    })
+  }
+
+  onHuggingFaceChange (e) {
+    this.props.updateSetting({
+      name: 'tagger:inference:enable',
+      value: e.target.checked,
+      stateName: 'taggerInference',
       noSnackbar: true
     })
   }
@@ -207,6 +237,21 @@ class TicketsSettings extends React.Component {
     this.setState({
       [stateName]: e.target.value
     })
+  }
+
+  onAutoTagSubmit (e) {
+    e.preventDefault()
+
+    const autoTagSettings = [
+      { name: 'tagger:host', value: this.state.host },
+      { name: 'tagger:strategy:options', value: {count: Number(this.state.topNNumber)} },
+      { 
+        name: 'tagger:basictoken',
+        value: window.btoa(`${this.state.userName}:${this.state.userName}`) 
+      }
+    ]
+
+    this.props.updateMultipleSettings(autoTagSettings)
   }
 
   onSubmitUpdateTag (e, tagId) {
@@ -273,8 +318,8 @@ class TicketsSettings extends React.Component {
             <SingleSelect
               items={mappedTypes}
               defaultValue={this.getSetting('defaultTicketType')}
-              onSelectChange={e => {
-                this.onDefaultTicketTypeChange(e)
+              onSelectChange={(e) => {
+                this.onDefaultTicketTypeChange(e);
               }}
               width={'50%'}
               showTextbox={false}
@@ -294,8 +339,8 @@ class TicketsSettings extends React.Component {
               stateName={'allowPublicTickets'}
               label={'Enable'}
               checked={this.getSetting('allowPublicTickets')}
-              onChange={e => {
-                this.onAllowPublicTicketsChange(e)
+              onChange={(e) => {
+                this.onAllowPublicTicketsChange(e);
               }}
             />
           }
@@ -309,8 +354,8 @@ class TicketsSettings extends React.Component {
               stateName={'allowAgentUserTickets'}
               label={'Enable'}
               checked={this.getSetting('allowAgentUserTickets')}
-              onChange={e => {
-                this.onAllowAgentUserTicketsChange(e)
+              onChange={(e) => {
+                this.onAllowAgentUserTicketsChange(e);
               }}
             />
           }
@@ -324,8 +369,8 @@ class TicketsSettings extends React.Component {
               stateName={'showOverdueTickets'}
               label={'Enable'}
               checked={this.getSetting('showOverdueTickets')}
-              onChange={e => {
-                this.onShowOverdueChange(e)
+              onChange={(e) => {
+                this.onShowOverdueChange(e);
               }}
             />
           }
@@ -379,13 +424,13 @@ class TicketsSettings extends React.Component {
               style={'success'}
               flat={true}
               extraClass={'md-btn-wave'}
-              onClick={e => {
-                this.showModal(e, 'CREATE_TICKET_TYPE')
+              onClick={(e) => {
+                this.showModal(e, 'CREATE_TICKET_TYPE');
               }}
             />
           }
           menuItems={this.getTicketTypes().map(function (type) {
-            return { key: type.get('_id'), title: type.get('name'), bodyComponent: <TicketTypeBody type={type} /> }
+            return { key: type.get('_id'), title: type.get('name'), bodyComponent: <TicketTypeBody type={type} /> };
           })}
         />
         <SettingItem
@@ -398,13 +443,13 @@ class TicketsSettings extends React.Component {
               flat={true}
               waves={true}
               extraClass={'mt-10 right'}
-              onClick={e => this.showModal(e, 'CREATE_PRIORITY')}
+              onClick={(e) => this.showModal(e, 'CREATE_PRIORITY')}
             />
           }
         >
           <Zone>
-            {this.getPriorities().map(p => {
-              const disableRemove = p.get('default') ? p.get('default') : false
+            {this.getPriorities().map((p) => {
+              const disableRemove = p.get('default') ? p.get('default') : false;
               return (
                 <ZoneBox key={p.get('_id')} extraClass={'priority-wrapper'}>
                   <SettingSubItem
@@ -418,20 +463,20 @@ class TicketsSettings extends React.Component {
                     }
                     component={
                       <ButtonGroup classNames={'uk-float-right'}>
-                        <Button text={'Edit'} small={true} onClick={e => TicketsSettings.toggleEditPriority(e)} />
+                        <Button text={'Edit'} small={true} onClick={(e) => TicketsSettings.toggleEditPriority(e)} />
                         <Button
                           text={'Remove'}
                           small={true}
                           style={'danger'}
                           disabled={disableRemove}
-                          onClick={e => this.onRemovePriorityClicked(e, p)}
+                          onClick={(e) => this.onRemovePriorityClicked(e, p)}
                         />
                       </ButtonGroup>
                     }
                   />
                   <EditPriorityPartial priority={p} />
                 </ZoneBox>
-              )
+              );
             })}
           </Zone>
         </SettingItem>
@@ -480,65 +525,65 @@ class TicketsSettings extends React.Component {
         {/*  </Zone>*/}
         {/*</SettingItem>*/}
 
-      <SettingItem
-        title={'Auto Tagging'}
-        subtitle={'Allow auto tagging of tickets.'}
-        component={
-          <EnableSwitch
-            stateName={'allowAutoTagging'}
-            label={'Enable'}
-            onChange={e => this.onAllowAutoTaggingChange(e)}
-            checked={this.getSetting('allowAutoTagging')}
-          />
-        }
-      >
-        <form onSubmit={e => console.log("submit form")}>
-          <div className={'uk-margin-medium-bottom'}>
-            <label>Host</label>
-            <input
-              type='text'
-              className={'md-input md-input-width-medium'}
-              name={'autoTaggingHost'}
-              disabled={!this.getSetting('allowAutoTagging')}
-              value={this.state.host}
-              onChange={e =>  this.onInputValueChanged(e, 'host')}
+        <SettingItem
+          title={'Auto Tagging'}
+          subtitle={'Allow auto tagging of tickets.'}
+          component={
+            <EnableSwitch
+              stateName={'autotagger'}
+              label={'Enable'}
+              onChange={(e) => this.onAllowAutoTaggingChange(e)}
+              checked={this.getSetting('autotagger')}
             />
-          </div>
-          <div className='uk-margin-medium-bottom'>
-            <label>Username</label>
-            <input
-              type='text'
-              className={'md-input md-input-width-medium'}
-              name={'userName'}
-              disabled={!this.getSetting('allowAutoTagging')}
-              value={this.state.userName}
-              onChange={e => this.onInputValueChanged(e, 'userName')}
-            />
-          </div>
-          <div className='uk-margin-medium-bottom'>
-            <label>Auth Password</label>
-            <input
-              type='password'
-              className={'md-input md-input-width-medium'}
-              name={'password'}
-              disabled={!this.getSetting('allowAutoTagging')}
-              value={this.state.password}
-              onChange={e => this.onInputValueChanged(e, 'password')}
-            />
-          </div>
-          <div className='uk-margin-medium-bottom'>
-            <label>Top N number</label>
-            <input
-              type='text'
-              className={'md-input md-input-width-medium'}
-              name={'topNNumber'}
-              disabled={!this.getSetting('allowAutoTagging')}
-              value={this.state.topNNumber}
-              onChange={e => this.onInputValueChanged(e, 'topNNumber')}
-            />
-          </div>
-          <div className='uk-clearfix'>
-            {/* <Button
+          }
+        >
+          <form onSubmit={(e) => this.onAutoTagSubmit(e)}>
+            <div className={'uk-margin-medium-bottom'}>
+              <label>Host</label>
+              <input
+                type="text"
+                className={'md-input md-input-width-medium'}
+                name={'autoTaggingHost'}
+                disabled={!this.getSetting('autotagger')}
+                value={this.state.host}
+                onChange={(e) => this.onInputValueChanged(e, 'host')}
+              />
+            </div>
+            <div className="uk-margin-medium-bottom">
+              <label>Username</label>
+              <input
+                type="text"
+                className={'md-input md-input-width-medium'}
+                name={'userName'}
+                disabled={!this.getSetting('autotagger')}
+                value={this.state.userName}
+                onChange={(e) => this.onInputValueChanged(e, 'userName')}
+              />
+            </div>
+            <div className="uk-margin-medium-bottom">
+              <label>Auth Password</label>
+              <input
+                type="password"
+                className={'md-input md-input-width-medium'}
+                name={'password'}
+                disabled={!this.getSetting('autotagger')}
+                value={this.state.password}
+                onChange={(e) => this.onInputValueChanged(e, 'password')}
+              />
+            </div>
+            <div className="uk-margin-medium-bottom">
+              <label>Top N number</label>
+              <input
+                type="text"
+                className={'md-input md-input-width-medium'}
+                name={'topNNumber'}
+                disabled={!this.getSetting('autotagger')}
+                value={this.state.topNNumber}
+                onChange={(e) => this.onInputValueChanged(e, 'topNNumber')}
+              />
+            </div>
+            <div className="uk-clearfix">
+              {/* <Button
               text={'Test Settings'}
               type={'button'}
               flat={true}
@@ -548,18 +593,38 @@ class TicketsSettings extends React.Component {
               disabled={!this.getSetting('mailerEnabled')}
               onClick={e => this.testMailerSettings(e)}
             /> */}
-            <Button
-              text={'Apply'}
-              type={'submit'}
-              style={'success'}
-              extraClass={'uk-float-right'}
-              disabled={!this.getSetting('allowAutoTagging')}
-              waves={true}
-              flat={true}
-            />
+              <Button
+                text={'Apply'}
+                type={'submit'}
+                style={'success'}
+                extraClass={'uk-float-right'}
+                disabled={!this.getSetting('autotagger')}
+                waves={true}
+                flat={true}
+              />
+            </div>
+          </form>
+          <div className="uk-clearfix">
+            <hr style={{ float: 'left', marginBlock:'10px' }} />
+            <div className="uk-float-left">
+              <h6 style={{ padding: 0, margin: '5px 0 0 0', fontSize: '16px', lineHeight: '14px' }}>
+                Use Hugging Face
+              </h6>
+              <h5 style={{ padding: '0 0 10px 0', margin: '2px 0 0 0', fontSize: '12px' }} className={'uk-text-muted'}>
+                Call huggingface inferece API for model queries instead of locally running model
+              </h5>
+            </div>
+            <div className="uk-float-right">
+              <EnableSwitch
+                label={'Enable'}
+                stateName={'taggerInference'}
+                checked={this.getSetting('taggerInference')}
+                onChange={e => this.onHuggingFaceChange(e)}
+                disabled={!this.getSetting('autotagger')}
+              />
+            </div>
           </div>
-        </form>
-      </SettingItem>
+        </SettingItem>
 
         <SettingItem
           title={'Ticket Tags'}
@@ -571,7 +636,7 @@ class TicketsSettings extends React.Component {
               flat={true}
               waves={true}
               extraClass={'mt-10 right'}
-              onClick={e =>
+              onClick={(e) =>
                 this.showModal(e, 'CREATE_TAG', { page: 'settings', currentPage: this.props.tagsSettings.currentPage })
               }
             />
@@ -587,7 +652,7 @@ class TicketsSettings extends React.Component {
             <SpinLoader active={this.props.tagsSettings.loading} extraClass={'panel-bg'} />
             <GridItem width={'1-1'}>
               <Grid extraClass={'zone ml-0'}>
-                {this.props.tagsSettings.tags.map(i => {
+                {this.props.tagsSettings.tags.map((i) => {
                   return (
                     <GridItem width={'1-2'} key={i.get('_id')} extraClass={'tag-wrapper br bb'}>
                       <Grid extraClass={'view-tag'}>
@@ -601,7 +666,7 @@ class TicketsSettings extends React.Component {
                                     lineHeight: '31px',
                                     margin: 0,
                                     padding: 0,
-                                    fontWeight: 300
+                                    fontWeight: 300,
                                   }}
                                 >
                                   {i.get('name')}
@@ -614,7 +679,7 @@ class TicketsSettings extends React.Component {
                                     flat={true}
                                     waves={true}
                                     small={true}
-                                    onClick={e => TicketsSettings.toggleEditTag(e)}
+                                    onClick={(e) => TicketsSettings.toggleEditTag(e)}
                                   />
                                   <Button
                                     text={'remove'}
@@ -622,7 +687,7 @@ class TicketsSettings extends React.Component {
                                     waves={true}
                                     style={'danger'}
                                     small={true}
-                                    onClick={e => this.onRemoveTagClicked(e, i)}
+                                    onClick={(e) => this.onRemoveTagClicked(e, i)}
                                   />
                                 </ButtonGroup>
                               </GridItem>
@@ -632,10 +697,10 @@ class TicketsSettings extends React.Component {
                       </Grid>
                       <Grid extraClass={'edit-tag z-box uk-clearfix nbt hide'} style={{ paddingTop: '5px' }}>
                         <GridItem width={'1-1'}>
-                          <form onSubmit={e => this.onSubmitUpdateTag(e, i.get('_id'))}>
+                          <form onSubmit={(e) => this.onSubmitUpdateTag(e, i.get('_id'))}>
                             <Grid>
                               <GridItem width={'2-3'}>
-                                <input type='text' className={'md-input'} name={'name'} defaultValue={i.get('name')} />
+                                <input type="text" className={'md-input'} name={'name'} defaultValue={i.get('name')} />
                               </GridItem>
                               <GridItem width={'1-3'} style={{ paddingTop: '10px' }}>
                                 <ButtonGroup classNames={'uk-float-right uk-text-right'}>
@@ -644,7 +709,7 @@ class TicketsSettings extends React.Component {
                                     flat={true}
                                     waves={true}
                                     small={true}
-                                    onClick={e => TicketsSettings.toggleEditTag(e)}
+                                    onClick={(e) => TicketsSettings.toggleEditTag(e)}
                                   />
                                   <Button
                                     type={'submit'}
@@ -661,14 +726,14 @@ class TicketsSettings extends React.Component {
                         </GridItem>
                       </Grid>
                     </GridItem>
-                  )
+                  );
                 })}
               </Grid>
             </GridItem>
           </Grid>
         </SettingItem>
       </div>
-    )
+    );
   }
 }
 
@@ -681,7 +746,8 @@ TicketsSettings.propTypes = {
   getTagsWithPage: PropTypes.func.isRequired,
   tagsUpdateCurrentPage: PropTypes.func.isRequired,
   showModal: PropTypes.func.isRequired,
-  deleteStatus: PropTypes.func.isRequired
+  deleteStatus: PropTypes.func.isRequired,
+  updateMultipleSettings: PropTypes.func.isRequired,
 }
 
 const mapStateToProps = state => ({
@@ -695,5 +761,6 @@ export default connect(mapStateToProps, {
   getTagsWithPage,
   tagsUpdateCurrentPage,
   showModal,
-  deleteStatus
+  deleteStatus,
+  updateMultipleSettings
 })(TicketsSettings)
