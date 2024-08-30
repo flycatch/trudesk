@@ -545,6 +545,29 @@ class TicketsSettings extends React.Component {
           }
         >
           <form onSubmit={(e) => this.onAutoTagSubmit(e)}>
+            <div className='uk-clearfix uk-margin-medium-bottom'>
+              <div className='uk-float-left'>
+                <h6 style={{ padding: 0, margin: '5px 0 0 0', fontSize: '16px', lineHeight: '14px' }}>
+                  Use Hugging Face
+                </h6>
+                <h5
+                  style={{ padding: '0 0 10px 0', margin: '2px 0 0 0', fontSize: '12px' }}
+                  className={'uk-text-muted'}
+                >
+                  Call hugging face inference API for model queries instead of locally running model
+                </h5>
+              </div>
+              <div className='uk-float-right'>
+                <EnableSwitch
+                  label={'Enable'}
+                  stateName={'taggerInference'}
+                  checked={this.getSetting('taggerInference')}
+                  onChange={e => this.onHuggingFaceChange(e)}
+                  disabled={!this.getSetting('autotagger')}
+                />
+              </div>
+              <hr style={{ float: 'left', marginTop: '10px' }} />
+            </div>
             <div className={'uk-margin-medium-bottom'}>
               <label>Host</label>
               <input
@@ -611,26 +634,6 @@ class TicketsSettings extends React.Component {
               />
             </div>
           </form>
-          <div className="uk-clearfix">
-            <hr style={{ float: 'left', marginBlock:'10px' }} />
-            <div className="uk-float-left">
-              <h6 style={{ padding: 0, margin: '5px 0 0 0', fontSize: '16px', lineHeight: '14px' }}>
-                Use Hugging Face
-              </h6>
-              <h5 style={{ padding: '0 0 10px 0', margin: '2px 0 0 0', fontSize: '12px' }} className={'uk-text-muted'}>
-                Call huggingface inferece API for model queries instead of locally running model
-              </h5>
-            </div>
-            <div className="uk-float-right">
-              <EnableSwitch
-                label={'Enable'}
-                stateName={'taggerInference'}
-                checked={this.getSetting('taggerInference')}
-                onChange={e => this.onHuggingFaceChange(e)}
-                disabled={!this.getSetting('autotagger')}
-              />
-            </div>
-          </div>
         </SettingItem>
 
         <SettingItem
