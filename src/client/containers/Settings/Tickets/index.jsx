@@ -50,10 +50,10 @@ class TicketsSettings extends React.Component {
 
     this.getTicketTags = this.getTicketTags.bind(this)
     this.state = {
-      host: '',
-      topNNumber: '',
-      userName: '',
-      password: '',
+      host: null,
+      topNNumber: null,
+      userName: null,
+      password: null,
     }
   }
 
@@ -114,11 +114,11 @@ class TicketsSettings extends React.Component {
       let stateObj = { ...state }
       if (!state.host)
         stateObj.host = nextProps.settings.getIn(['settings', 'taggerHost', 'value']) || ''
-      if (!state.topNNumber) {
+      if (state.topNNumber == null) {
         const count = nextProps.settings.getIn(['settings', 'taggerStrategyOptions', 'value','count']) || '3'
         stateObj.topNNumber = count.toString()
       }
-      if (!state.userName ||  !state.password){
+      if (state.userName == null ||  state.password == null){
         const [userName, password] = window.atob(nextProps.settings.getIn(['settings', 'taggerBasictoken', 'value']) || '').split(":")
         stateObj.userName = userName
         stateObj.password = password
@@ -545,7 +545,7 @@ class TicketsSettings extends React.Component {
                 className={'md-input md-input-width-medium'}
                 name={'autoTaggingHost'}
                 disabled={!this.getSetting('autotagger')}
-                value={this.state.host}
+                value={this.state.host ?? ''}
                 onChange={(e) => this.onInputValueChanged(e, 'host')}
               />
             </div>
@@ -556,7 +556,7 @@ class TicketsSettings extends React.Component {
                 className={'md-input md-input-width-medium'}
                 name={'userName'}
                 disabled={!this.getSetting('autotagger')}
-                value={this.state.userName}
+                value={this.state.userName ?? ''}
                 onChange={(e) => this.onInputValueChanged(e, 'userName')}
               />
             </div>
@@ -567,7 +567,7 @@ class TicketsSettings extends React.Component {
                 className={'md-input md-input-width-medium'}
                 name={'password'}
                 disabled={!this.getSetting('autotagger')}
-                value={this.state.password}
+                value={this.state.password ?? ''}
                 onChange={(e) => this.onInputValueChanged(e, 'password')}
               />
             </div>
@@ -578,7 +578,7 @@ class TicketsSettings extends React.Component {
                 className={'md-input md-input-width-medium'}
                 name={'topNNumber'}
                 disabled={!this.getSetting('autotagger')}
-                value={this.state.topNNumber}
+                value={this.state.topNNumber ?? '3'}
                 onChange={(e) => this.onInputValueChanged(e, 'topNNumber')}
               />
             </div>
