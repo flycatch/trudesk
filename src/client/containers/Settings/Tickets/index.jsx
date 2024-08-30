@@ -257,7 +257,7 @@ class TicketsSettings extends React.Component {
       { name: 'tagger:strategy:options', value: { count: Number(this.state.topNNumber) } },
       {
         name: 'tagger:basictoken',
-        value: window.btoa(`${this.state.userName}:${this.state.userName}`),
+        value: window.btoa(`${this.state.userName}:${this.state.password}`),
       },
     ];
 
