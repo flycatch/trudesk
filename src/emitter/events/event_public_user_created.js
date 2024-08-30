@@ -59,7 +59,7 @@ const sendMail = async (event, emails, baseUrl, betaEnabled) => {
 
   const template = await Template.findOne({ name: 'public-account-created' })
   if (template) {
-    const context = { base_url: baseUrl, username: event.user.email, plainTextPassword: event.plainTextPass }
+    const context = { baseUrl, username: event.user.email, plainTextPassword: event.plainTextPass }
 
     const html = await email.render('public-account-created', context)
     const subjectParsed = global.Handlebars.compile(template.subject)(context)
