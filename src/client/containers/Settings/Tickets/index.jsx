@@ -107,27 +107,34 @@ class TicketsSettings extends React.Component {
       if (this.tagsPagination.currentPage > this.tagsPagination.pages - 1)
         this.tagsPagination.selectPage(this.tagsPagination.pages - 1)
     }
-  }
 
-  static getDerivedStateFromProps (nextProps, state) {
-    if (nextProps.settings) {
-      let stateObj = { ...state }
-      if (!state.host)
-        stateObj.host = nextProps.settings.getIn(['settings', 'taggerHost', 'value']) || ''
-      if (state.topNNumber == null) {
-        const count = nextProps.settings.getIn(['settings', 'taggerStrategyOptions', 'value','count']) || '3'
-        stateObj.topNNumber = count.toString()
-      }
-      if (state.userName == null ||  state.password == null){
-        const [userName, password] = window.atob(nextProps.settings.getIn(['settings', 'taggerBasictoken', 'value']) || '').split(":")
-        stateObj.userName = userName
-        stateObj.password = password
-      }
-
-      return stateObj
+    if (
+      prevProps.settings.getIn(['settings', 'taggerHost', 'value']) !==
+      this.props.settings.getIn(['settings', 'taggerHost', 'value'])
+    ) {
+      const host = this.props.settings.getIn(['settings', 'taggerHost', 'value']);
+      console.log(host);
+      this.setState({ host });
     }
 
-    return null
+    if (
+      prevProps.settings.getIn(['settings', 'taggerStrategyOptions', 'value', 'count']) !==
+      this.props.settings.getIn(['settings', 'taggerStrategyOptions', 'value', 'count'])
+    ) {
+      const topNNumber = this.props.settings.getIn(['settings', 'taggerStrategyOptions', 'value', 'count']);
+      console.log(topNNumber);
+      this.setState({ topNNumber: topNNumber ? topNNumber.toString() : '3' });
+    }
+
+    if (
+      prevProps.settings.getIn(['settings', 'taggerBasictoken', 'value']) !==
+      this.props.settings.getIn(['settings', 'taggerBasictoken', 'value'])
+    ) {
+      const basicToken = this.props.settings.getIn(['settings', 'taggerBasictoken', 'value']);
+      const [userName, password] = window.atob(basicToken).split(':');
+      console.log(`${userName} : ${password}`);
+      this.setState({ userName, password });
+    }
   }
 
   getSetting (name) {
