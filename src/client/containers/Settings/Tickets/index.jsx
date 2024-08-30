@@ -45,269 +45,279 @@ import EditStatusPartial from './editStatusPartial'
 import TicketStatusContainer from 'containers/Settings/Tickets/ticketStatusContainer'
 
 class TicketsSettings extends React.Component {
-  constructor (props) {
-    super(props)
+  constructor(props) {
+    super(props);
 
-    this.getTicketTags = this.getTicketTags.bind(this)
+    this.getTicketTags = this.getTicketTags.bind(this);
     this.state = {
       host: null,
       topNNumber: null,
       userName: null,
       password: null,
-    }
+    };
   }
 
-  static toggleEditPriority (e) {
-    const $parent = $(e.target).parents('.priority-wrapper')
-    const $v = $parent.find('.view-priority')
-    const $e = $parent.find('.edit-priority')
+  static toggleEditPriority(e) {
+    const $parent = $(e.target).parents('.priority-wrapper');
+    const $v = $parent.find('.view-priority');
+    const $e = $parent.find('.edit-priority');
     if ($v && $e) {
-      $v.toggleClass('hide')
-      $e.toggleClass('hide')
+      $v.toggleClass('hide');
+      $e.toggleClass('hide');
     }
   }
 
-  static toggleEditStatus (e) {
-    const $parent = $(e.target).parents('.status-wrapper')
-    const $v = $parent.find('.view-status')
-    const $e = $parent.find('.edit-status')
+  static toggleEditStatus(e) {
+    const $parent = $(e.target).parents('.status-wrapper');
+    const $v = $parent.find('.view-status');
+    const $e = $parent.find('.edit-status');
     if ($v && $e) {
-      $v.toggleClass('hide')
-      $e.toggleClass('hide')
+      $v.toggleClass('hide');
+      $e.toggleClass('hide');
     }
   }
 
-  static toggleEditTag (e) {
-    const $target = $(e.target)
-    const $parent = $target.parents('.tag-wrapper')
-    const $v = $parent.find('.view-tag')
-    const $e = $parent.find('.edit-tag')
+  static toggleEditTag(e) {
+    const $target = $(e.target);
+    const $parent = $target.parents('.tag-wrapper');
+    const $v = $parent.find('.view-tag');
+    const $e = $parent.find('.edit-tag');
     if ($v && $e) {
-      $v.toggleClass('hide')
-      $e.toggleClass('hide')
+      $v.toggleClass('hide');
+      $e.toggleClass('hide');
     }
   }
 
-  componentDidMount () {
-    this.getTicketTags(null, 0)
-    const $tagPagination = $('#tagPagination')
+  componentDidMount() {
+    this.getTicketTags(null, 0);
+    const $tagPagination = $('#tagPagination');
     this.tagsPagination = UIKit.pagination($tagPagination, {
       items: this.props.tagsSettings.totalCount ? this.props.tagsSettings.totalCount : 0,
-      itemsOnPage: 16
-    })
-    $tagPagination.on('select.uk.pagination', this.getTicketTags)
+      itemsOnPage: 16,
+    });
+    $tagPagination.on('select.uk.pagination', this.getTicketTags);
   }
 
-  componentDidUpdate (prevProps) {
+  componentDidUpdate(prevProps) {
     if (prevProps.tagsSettings.totalCount !== this.props.tagsSettings.totalCount) {
       this.tagsPagination.pages = Math.ceil(this.props.tagsSettings.totalCount / 16)
         ? Math.ceil(this.props.tagsSettings.totalCount / 16)
-        : 1
-      this.tagsPagination.render()
+        : 1;
+      this.tagsPagination.render();
       if (this.tagsPagination.currentPage > this.tagsPagination.pages - 1)
-        this.tagsPagination.selectPage(this.tagsPagination.pages - 1)
+        this.tagsPagination.selectPage(this.tagsPagination.pages - 1);
+    }
+
+    if (
+      prevProps.settings.getIn(['settings', 'taggerHost', 'value']) !==
+      this.props.settings.getIn(['settings', 'taggerHost', 'value'])
+    ) {
+      const host = this.props.settings.getIn(['settings', 'taggerHost', 'value']);
+      this.setState({ host });
+    }
+
+    if (
+      prevProps.settings.getIn(['settings', 'taggerStrategyOptions', 'value', 'count']) !==
+      this.props.settings.getIn(['settings', 'taggerStrategyOptions', 'value', 'count'])
+    ) {
+      const topNNumber = this.props.settings.getIn(['settings', 'taggerStrategyOptions', 'value', 'count']);
+      this.setState({ topNNumber: topNNumber ? topNNumber : 1  });
+    }
+
+    if (
+      prevProps.settings.getIn(['settings', 'taggerBasictoken', 'value']) !==
+      this.props.settings.getIn(['settings', 'taggerBasictoken', 'value'])
+    ) {
+      const basicToken = this.props.settings.getIn(['settings', 'taggerBasictoken', 'value']);
+      const [userName, password] = window.atob(basicToken).split(':');
+      this.setState({ userName, password });
     }
   }
 
-  static getDerivedStateFromProps (nextProps, state) {
-    if (nextProps.settings) {
-      let stateObj = { ...state }
-      if (!state.host)
-        stateObj.host = nextProps.settings.getIn(['settings', 'taggerHost', 'value']) || ''
-      if (state.topNNumber == null) {
-        const count = nextProps.settings.getIn(['settings', 'taggerStrategyOptions', 'value','count']) || '3'
-        stateObj.topNNumber = count.toString()
-      }
-      if (state.userName == null ||  state.password == null){
-        const [userName, password] = window.atob(nextProps.settings.getIn(['settings', 'taggerBasictoken', 'value']) || '').split(":")
-        stateObj.userName = userName
-        stateObj.password = password
-      }
-
-      return stateObj
-    }
-
-    return null
-  }
-
-  getSetting (name) {
+  getSetting(name) {
     return this.props.settings.getIn(['settings', name, 'value'])
       ? this.props.settings.getIn(['settings', name, 'value'])
-      : ''
+      : '';
   }
 
-  getTicketTypes () {
+  getTicketTypes() {
     return this.props.settings && this.props.settings.get('ticketTypes')
       ? this.props.settings.get('ticketTypes').toArray()
-      : []
+      : [];
   }
 
-  getPriorities () {
+  getPriorities() {
     return this.props.settings && this.props.settings.get('priorities')
       ? this.props.settings.get('priorities').toArray()
-      : []
+      : [];
   }
 
-  getStatus () {
-    return this.props.settings && this.props.settings.get('status') ? this.props.settings.get('status').toArray() : []
+  getStatus() {
+    return this.props.settings && this.props.settings.get('status') ? this.props.settings.get('status').toArray() : [];
   }
 
-  getTicketTags (e, page) {
-    if (e) e.preventDefault()
-    this.props.tagsUpdateCurrentPage(page)
-    this.props.getTagsWithPage({ limit: 16, page })
+  getTicketTags(e, page) {
+    if (e) e.preventDefault();
+    this.props.tagsUpdateCurrentPage(page);
+    this.props.getTagsWithPage({ limit: 16, page });
   }
 
-  onDefaultTicketTypeChange (e) {
-    this.props.updateSetting({ name: 'ticket:type:default', value: e.target.value, stateName: 'defaultTicketType' })
+  onDefaultTicketTypeChange(e) {
+    this.props.updateSetting({ name: 'ticket:type:default', value: e.target.value, stateName: 'defaultTicketType' });
   }
 
-  onAllowPublicTicketsChange (e) {
+  onAllowPublicTicketsChange(e) {
     this.props.updateSetting({
       name: 'allowPublicTickets:enable',
       value: e.target.checked,
       stateName: 'allowPublicTickets',
-      noSnackbar: true
-    })
+      noSnackbar: true,
+    });
   }
 
-  onAllowAutoTaggingChange (e) {
+  onAllowAutoTaggingChange(e) {
     this.props.updateSetting({
       name: 'autotagger:enable',
       value: e.target.checked,
       stateName: 'autotagger',
-      noSnackbar: true
-    })
+      noSnackbar: true,
+    });
   }
 
-  onHuggingFaceChange (e) {
+  onHuggingFaceChange(e) {
     this.props.updateSetting({
       name: 'tagger:inference:enable',
       value: e.target.checked,
       stateName: 'taggerInference',
-      noSnackbar: true
-    })
+      noSnackbar: true,
+    });
   }
 
-  onAllowAgentUserTicketsChange (e) {
+  onAllowAgentUserTicketsChange(e) {
     this.props.updateSetting({
       name: 'allowAgentUserTickets:enable',
       value: e.target.checked,
       stateName: 'allowAgentUserTickets',
-      noSnackbar: true
-    })
+      noSnackbar: true,
+    });
   }
 
-  onShowOverdueChange (e) {
+  onShowOverdueChange(e) {
     this.props.updateSetting({
       name: 'showOverdueTickets:enable',
       value: e.target.checked,
       stateName: 'showOverdueTickets',
-      noSnackbar: true
-    })
+      noSnackbar: true,
+    });
   }
 
-  onPlayNewTicketSoundChange (e) {
+  onPlayNewTicketSoundChange(e) {
     this.props.updateSetting({
       name: 'playNewTicketSound:enable',
       value: e.target.checked,
       stateName: 'playNewTicketSound',
-      noSnackbar: true
-    })
+      noSnackbar: true,
+    });
   }
 
-  showModal (e, modal, props) {
-    e.preventDefault()
-    this.props.showModal(modal, props)
+  showModal(e, modal, props) {
+    e.preventDefault();
+    this.props.showModal(modal, props);
   }
 
-  onRemovePriorityClicked (e, priority) {
-    e.preventDefault()
-    this.props.showModal('DELETE_PRIORITY', { priority })
+  onRemovePriorityClicked(e, priority) {
+    e.preventDefault();
+    this.props.showModal('DELETE_PRIORITY', { priority });
   }
 
-  onRemoveStatusClicked (e, stat) {
-    e.preventDefault()
-    console.log(stat)
-    console.log(stat.get('_id'))
-    this.props.deleteStatus(stat.get('id'))
+  onRemoveStatusClicked(e, stat) {
+    e.preventDefault();
+    console.log(stat);
+    console.log(stat.get('_id'));
+    this.props.deleteStatus(stat.get('id'));
   }
 
-  onInputValueChanged (e, stateName) {
+  onInputValueChanged(e, stateName) {
     this.setState({
-      [stateName]: e.target.value
-    })
+      [stateName]: e.target.value,
+    });
   }
 
-  onAutoTagSubmit (e) {
-    e.preventDefault()
+  onTopNCountUpdate(e) {
+    this.setState({
+      topNNumber: Number(e.target.value) < 1 ? 1 : e.target.value,
+    });
+  }
+
+  onAutoTagSubmit(e) {
+    e.preventDefault();
 
     const autoTagSettings = [
       { name: 'tagger:host', value: this.state.host },
-      { name: 'tagger:strategy:options', value: {count: Number(this.state.topNNumber)} },
-      { 
+      { name: 'tagger:strategy:options', value: { count: Number(this.state.topNNumber) } },
+      {
         name: 'tagger:basictoken',
-        value: window.btoa(`${this.state.userName}:${this.state.userName}`) 
-      }
-    ]
+        value: window.btoa(`${this.state.userName}:${this.state.userName}`),
+      },
+    ];
 
-    this.props.updateMultipleSettings(autoTagSettings)
+    this.props.updateMultipleSettings(autoTagSettings);
   }
 
-  onSubmitUpdateTag (e, tagId) {
-    e.preventDefault()
-    e.persist()
-    const name = e.target.name.value
-    if (name.length < 2) return helpers.UI.showSnackbar('Invalid Tag Name', true)
+  onSubmitUpdateTag(e, tagId) {
+    e.preventDefault();
+    e.persist();
+    const name = e.target.name.value;
+    if (name.length < 2) return helpers.UI.showSnackbar('Invalid Tag Name', true);
 
     axios
       .put(`/api/v1/tags/${tagId}`, { name })
-      .then(res => {
-        TicketsSettings.toggleEditTag(e)
-        helpers.UI.showSnackbar(`Tag: ${res.data.tag.name} updated successfully`)
-        this.getTicketTags(null, this.tagsPagination.currentPage)
+      .then((res) => {
+        TicketsSettings.toggleEditTag(e);
+        helpers.UI.showSnackbar(`Tag: ${res.data.tag.name} updated successfully`);
+        this.getTicketTags(null, this.tagsPagination.currentPage);
       })
-      .catch(err => {
-        if (!err.response) return Log.error(err)
+      .catch((err) => {
+        if (!err.response) return Log.error(err);
 
-        const errorText = err.response.data.error
-        Log.error(errorText, err.response)
-        helpers.UI.showSnackbar(`Error: ${errorText}`, true)
-      })
+        const errorText = err.response.data.error;
+        Log.error(errorText, err.response);
+        helpers.UI.showSnackbar(`Error: ${errorText}`, true);
+      });
   }
 
-  onRemoveTagClicked (e, tag) {
+  onRemoveTagClicked(e, tag) {
     UIKit.modal.confirm(
       `Really delete tag <strong>${tag.get()}</strong><br />
         <i style="font-size: 13px; color: #e53935">This will remove the tag from all associated tickets.</i>`,
       () => {
         axios
           .delete(`/api/v1/tags/${tag.get('_id')}`)
-          .then(res => {
+          .then((res) => {
             if (res.data.success) {
-              helpers.UI.showSnackbar(`Successfully removed tag: ${tag.get('name')}`)
+              helpers.UI.showSnackbar(`Successfully removed tag: ${tag.get('name')}`);
 
-              this.getTicketTags(null, this.tagsPagination.currentPage)
+              this.getTicketTags(null, this.tagsPagination.currentPage);
             }
           })
-          .catch(error => {
-            const errorText = error.response.data.error
-            helpers.UI.showSnackbar(`Error: ${errorText}`, true)
-            Log.error(errorText, error.response)
-          })
+          .catch((error) => {
+            const errorText = error.response.data.error;
+            helpers.UI.showSnackbar(`Error: ${errorText}`, true);
+            Log.error(errorText, error.response);
+          });
       },
       {
         labels: { Ok: 'Yes', Cancel: 'No' },
-        confirmButtonClass: 'md-btn-danger'
+        confirmButtonClass: 'md-btn-danger',
       }
-    )
+    );
   }
 
-  render () {
-    const { active, viewdata } = this.props
+  render() {
+    const { active, viewdata } = this.props;
     const mappedTypes = this.getTicketTypes().map(function (type) {
-      return { text: type.get('name'), value: type.get('_id') }
-    })
+      return { text: type.get('name'), value: type.get('_id') };
+    });
 
     return (
       <div className={active ? 'active' : 'hide'}>
@@ -538,6 +548,29 @@ class TicketsSettings extends React.Component {
           }
         >
           <form onSubmit={(e) => this.onAutoTagSubmit(e)}>
+            <div className="uk-clearfix uk-margin-medium-bottom">
+              <div className="uk-float-left">
+                <h6 style={{ padding: 0, margin: '5px 0 0 0', fontSize: '16px', lineHeight: '14px' }}>
+                  Use Hugging Face
+                </h6>
+                <h5
+                  style={{ padding: '0 0 10px 0', margin: '2px 0 0 0', fontSize: '12px' }}
+                  className={'uk-text-muted'}
+                >
+                  Call hugging face inference API for model queries instead of locally running model
+                </h5>
+              </div>
+              <div className="uk-float-right">
+                <EnableSwitch
+                  label={'Enable'}
+                  stateName={'taggerInference'}
+                  checked={this.getSetting('taggerInference')}
+                  onChange={(e) => this.onHuggingFaceChange(e)}
+                  disabled={!this.getSetting('autotagger')}
+                />
+              </div>
+              <hr style={{ float: 'left', marginTop: '10px' }} />
+            </div>
             <div className={'uk-margin-medium-bottom'}>
               <label>Host</label>
               <input
@@ -574,12 +607,12 @@ class TicketsSettings extends React.Component {
             <div className="uk-margin-medium-bottom">
               <label>Top N number</label>
               <input
-                type="text"
+                type="number"
                 className={'md-input md-input-width-medium'}
                 name={'topNNumber'}
                 disabled={!this.getSetting('autotagger')}
-                value={this.state.topNNumber ?? '3'}
-                onChange={(e) => this.onInputValueChanged(e, 'topNNumber')}
+                value={this.state.topNNumber ?? 1}
+                onChange={(e) => this.onTopNCountUpdate(e)}
               />
             </div>
             <div className="uk-clearfix">
@@ -604,26 +637,6 @@ class TicketsSettings extends React.Component {
               />
             </div>
           </form>
-          <div className="uk-clearfix">
-            <hr style={{ float: 'left', marginBlock:'10px' }} />
-            <div className="uk-float-left">
-              <h6 style={{ padding: 0, margin: '5px 0 0 0', fontSize: '16px', lineHeight: '14px' }}>
-                Use Hugging Face
-              </h6>
-              <h5 style={{ padding: '0 0 10px 0', margin: '2px 0 0 0', fontSize: '12px' }} className={'uk-text-muted'}>
-                Call huggingface inferece API for model queries instead of locally running model
-              </h5>
-            </div>
-            <div className="uk-float-right">
-              <EnableSwitch
-                label={'Enable'}
-                stateName={'taggerInference'}
-                checked={this.getSetting('taggerInference')}
-                onChange={e => this.onHuggingFaceChange(e)}
-                disabled={!this.getSetting('autotagger')}
-              />
-            </div>
-          </div>
         </SettingItem>
 
         <SettingItem
