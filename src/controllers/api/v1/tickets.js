@@ -20,6 +20,8 @@ var permissions = require('../../../permissions')
 var emitter = require('../../../emitter')
 var xss = require('xss')
 var sanitizeHtml = require('sanitize-html')
+const ticketsController = require('@/controllers/tickets')
+const Setting = require('../../../models/setting')
 
 var apiTickets = {}
 
@@ -709,6 +711,15 @@ apiTickets.createPublicTicket = function (req, res) {
       })
     }
   )
+}
+
+apiTickets.uploadAttachement = async (req, res) => {
+    const enabled = (await Setting.getSettingByName('ticket:public:upload'))?.value ?? false
+    if (!enabled) {
+        logger.warn('public upload API called during disabled')
+        return res.status(400).json({ error: "Public upload disabled"})
+    }
+    return ticketsController.uploadAttachment(req, res)
 }
 
 /**

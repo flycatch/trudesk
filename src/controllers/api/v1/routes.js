@@ -119,6 +119,7 @@ module.exports = function (middleware, router, controllers) {
   router.post('/api/v1/public/users/checkemail', checkCaptcha, checkOrigin, apiCtrl.users.checkEmail)
   // TODO: renable some kind of user verification instead of captcha
   router.post('/api/v1/public/tickets/create', apiCtrl.tickets.createPublicTicket)
+  router.post('/api/v1/public/tickets/attachement', apiCtrl.tickets.uploadAttachment)
   router.post('/api/v1/public/account/create', checkCaptcha, checkOrigin, apiCtrl.users.createPublicAccount)
 
   // Groups
