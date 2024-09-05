@@ -1,7 +1,5 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import axios from 'axios';
-import Log from '../../../logger';
 import { connect } from 'react-redux';
 import { updateSetting, updateMultipleSettings } from 'actions/settings';
 import helpers from 'lib/helpers';
@@ -19,7 +17,7 @@ class TaggingStrategies extends React.Component {
     this.state = {
       taggerStrategyValue: '',
       percentage: '',
-      count: '',
+      count: props.settings.getIn(['settings', 'taggerStrategyOptions', 'value', 'count']) || '',
       minimumThreshold: '',
       maximumThreshold: '',
       selectedStrategyOptions: [],
@@ -74,13 +72,18 @@ class TaggingStrategies extends React.Component {
       if (!state.taggerStrategyValue) {
         stateObj.taggerStrategyValue = nextProps.settings.getIn(['settings', 'taggerStrategy', 'value']) || '';
       }
-      if (!state.count || !state.percentage || !state.maximumThreshold || !state.minimumThreshold) {
-        nextProps.settings.getIn(['settings', 'taggerStrategyOptions', 'value']);
+      if (!state.count) {
+        stateObj.count = nextProps.settings.getIn(['settings', 'taggerStrategyOptions', 'value', 'count']) || '';
+      }
+      if (!state.percentage) {
         stateObj.percentage =
           nextProps.settings.getIn(['settings', 'taggerStrategyOptions', 'value', 'percentage']) || '';
-        stateObj.count = nextProps.settings.getIn(['settings', 'taggerStrategyOptions', 'value', 'count']) || '';
+      }
+      if (!state.maximumThreshold) {
         stateObj.maximumThreshold =
           nextProps.settings.getIn(['settings', 'taggerStrategyOptions', 'value', 'maximumThreshold']) || '';
+      }
+      if (!state.minimumThreshold) {
         stateObj.minimumThreshold =
           nextProps.settings.getIn(['settings', 'taggerStrategyOptions', 'value', 'minimumThreshold']) || '';
       }
@@ -146,20 +149,7 @@ class TaggingStrategies extends React.Component {
     }));
     const { selectedStrategyOptions } = this.state;
     return (
-      <SettingItem
-        title={'Ticket Tagging Strategy'}
-        subtitle={'Strategies to tag tickets and its options.'}
-        component={
-          <Button
-            text={'Save'}
-            style={'success'}
-            flat={true}
-            waves={true}
-            extraClass={'mt-10 right'}
-            onClick={() => {}}
-          />
-        }
-      >
+      <SettingItem title={'Ticket Tagging Strategy'} subtitle={'Strategies to tag tickets and its options.'}>
         <form onSubmit={(e) => this.onOptionsSubmit(e)}>
           <Zone>
             <ZoneBox>

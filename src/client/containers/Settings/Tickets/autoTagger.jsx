@@ -1,7 +1,5 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import axios from 'axios';
-import Log from '../../../logger';
 import { connect } from 'react-redux';
 import { updateSetting, updateMultipleSettings } from 'actions/settings';
 import helpers from 'lib/helpers';
@@ -13,17 +11,8 @@ import EnableSwitch from 'components/Settings/EnableSwitch';
 class AutoTagger extends React.Component {
   constructor(props) {
     super(props);
-    // this.state = {
-    //   mailerSSL: '',
-    //   mailerHost: '',
-    //   mailerPort: '',
-    //   mailerUsername: '',
-    //   mailerPassword: '',
-    //   mailerFrom: ''
-    // }
     this.state = {
       host: '',
-      topNNumber: '',
       userName: '',
       password: '',
     };
@@ -41,7 +30,6 @@ class AutoTagger extends React.Component {
     if (nextProps.settings) {
       let stateObj = { ...state };
       if (!state.host) stateObj.host = nextProps.settings.getIn(['settings', 'taggerHost', 'value']) || '';
-      if (!state.topNNumber) stateObj.topNNumber = nextProps.settings.getIn(['settings', 'taggerStrategyOptions', 'value', 'count']) || '';
       if (!state.userName || !state.password){
         const basicToken = nextProps.settings.getIn(['settings', 'taggerBasictoken', 'value']) || ''; 
         const [userName, password] = window.atob(basicToken).split(':');
@@ -85,18 +73,11 @@ class AutoTagger extends React.Component {
     });
   }
 
-  onTopNCountUpdate(e) {
-    this.setState({
-      topNNumber: Number(e.target.value) < 1 ? 1 : e.target.value,
-    });
-  }
-
   onAutoTagSubmit(e) {
     e.preventDefault();
 
     const autoTagSettings = [
       { name: 'tagger:host', value: this.state.host },
-      { name: 'tagger:strategy:options', value: { count: Number(this.state.topNNumber) } },
       {
         name: 'tagger:basictoken',
         value: window.btoa(`${this.state.userName}:${this.state.password}`),
@@ -174,28 +155,7 @@ class AutoTagger extends React.Component {
               onChange={(e) => this.onInputValueChanged(e, 'password')}
             />
           </div>
-          <div className="uk-margin-medium-bottom">
-            <label>Top N number</label>
-            <input
-              type="number"
-              className={'md-input md-input-width-medium'}
-              name={'topNNumber'}
-              disabled={!this.getSetting('autotagger')}
-              value={this.state.topNNumber ?? 1}
-              onChange={(e) => this.onTopNCountUpdate(e)}
-            />
-          </div>
           <div className="uk-clearfix">
-            {/* <Button
-            text={'Test Settings'}
-            type={'button'}
-            flat={true}
-            waves={true}
-            style={'primary'}
-            extraClass={'uk-float-left'}
-            disabled={!this.getSetting('mailerEnabled')}
-            onClick={e => this.testMailerSettings(e)}
-          /> */}
             <Button
               text={'Apply'}
               type={'submit'}
