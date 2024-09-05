@@ -42,6 +42,8 @@ import SingleSelect from 'components/SingleSelect'
 import SplitSettingsPanel from 'components/Settings/SplitSettingsPanel'
 import SpinLoader from 'components/SpinLoader'
 import EditStatusPartial from './editStatusPartial'
+import AutoTagger from './autoTagger';
+import TaggingStrategies from './taggingStrategies'
 import TicketStatusContainer from 'containers/Settings/Tickets/ticketStatusContainer'
 
 class TicketsSettings extends React.Component {
@@ -49,12 +51,6 @@ class TicketsSettings extends React.Component {
     super(props);
 
     this.getTicketTags = this.getTicketTags.bind(this);
-    this.state = {
-      host: null,
-      topNNumber: null,
-      userName: null,
-      password: null,
-    };
   }
 
   static toggleEditPriority(e) {
@@ -107,31 +103,6 @@ class TicketsSettings extends React.Component {
       if (this.tagsPagination.currentPage > this.tagsPagination.pages - 1)
         this.tagsPagination.selectPage(this.tagsPagination.pages - 1);
     }
-
-    if (
-      prevProps.settings.getIn(['settings', 'taggerHost', 'value']) !==
-      this.props.settings.getIn(['settings', 'taggerHost', 'value'])
-    ) {
-      const host = this.props.settings.getIn(['settings', 'taggerHost', 'value']);
-      this.setState({ host });
-    }
-
-    if (
-      prevProps.settings.getIn(['settings', 'taggerStrategyOptions', 'value', 'count']) !==
-      this.props.settings.getIn(['settings', 'taggerStrategyOptions', 'value', 'count'])
-    ) {
-      const topNNumber = this.props.settings.getIn(['settings', 'taggerStrategyOptions', 'value', 'count']);
-      this.setState({ topNNumber: topNNumber ? topNNumber : 1  });
-    }
-
-    if (
-      prevProps.settings.getIn(['settings', 'taggerBasictoken', 'value']) !==
-      this.props.settings.getIn(['settings', 'taggerBasictoken', 'value'])
-    ) {
-      const basicToken = this.props.settings.getIn(['settings', 'taggerBasictoken', 'value']);
-      const [userName, password] = window.atob(basicToken).split(':');
-      this.setState({ userName, password });
-    }
   }
 
   getSetting(name) {
@@ -171,24 +142,6 @@ class TicketsSettings extends React.Component {
       name: 'allowPublicTickets:enable',
       value: e.target.checked,
       stateName: 'allowPublicTickets',
-      noSnackbar: true,
-    });
-  }
-
-  onAllowAutoTaggingChange(e) {
-    this.props.updateSetting({
-      name: 'autotagger:enable',
-      value: e.target.checked,
-      stateName: 'autotagger',
-      noSnackbar: true,
-    });
-  }
-
-  onHuggingFaceChange(e) {
-    this.props.updateSetting({
-      name: 'tagger:inference:enable',
-      value: e.target.checked,
-      stateName: 'taggerInference',
       noSnackbar: true,
     });
   }
@@ -237,32 +190,6 @@ class TicketsSettings extends React.Component {
     this.props.deleteStatus(stat.get('id'));
   }
 
-  onInputValueChanged(e, stateName) {
-    this.setState({
-      [stateName]: e.target.value,
-    });
-  }
-
-  onTopNCountUpdate(e) {
-    this.setState({
-      topNNumber: Number(e.target.value) < 1 ? 1 : e.target.value,
-    });
-  }
-
-  onAutoTagSubmit(e) {
-    e.preventDefault();
-
-    const autoTagSettings = [
-      { name: 'tagger:host', value: this.state.host },
-      { name: 'tagger:strategy:options', value: { count: Number(this.state.topNNumber) } },
-      {
-        name: 'tagger:basictoken',
-        value: window.btoa(`${this.state.userName}:${this.state.password}`),
-      },
-    ];
-
-    this.props.updateMultipleSettings(autoTagSettings);
-  }
 
   onSubmitUpdateTag(e, tagId) {
     e.preventDefault();
@@ -535,109 +462,8 @@ class TicketsSettings extends React.Component {
         {/*  </Zone>*/}
         {/*</SettingItem>*/}
 
-        <SettingItem
-          title={'Auto Tagging'}
-          subtitle={'Allow auto tagging of tickets.'}
-          component={
-            <EnableSwitch
-              stateName={'autotagger'}
-              label={'Enable'}
-              onChange={(e) => this.onAllowAutoTaggingChange(e)}
-              checked={this.getSetting('autotagger')}
-            />
-          }
-        >
-          <form onSubmit={(e) => this.onAutoTagSubmit(e)}>
-            <div className="uk-clearfix uk-margin-medium-bottom">
-              <div className="uk-float-left">
-                <h6 style={{ padding: 0, margin: '5px 0 0 0', fontSize: '16px', lineHeight: '14px' }}>
-                  Use Hugging Face
-                </h6>
-                <h5
-                  style={{ padding: '0 0 10px 0', margin: '2px 0 0 0', fontSize: '12px' }}
-                  className={'uk-text-muted'}
-                >
-                  Call hugging face inference API for model queries instead of locally running model
-                </h5>
-              </div>
-              <div className="uk-float-right">
-                <EnableSwitch
-                  label={'Enable'}
-                  stateName={'taggerInference'}
-                  checked={this.getSetting('taggerInference')}
-                  onChange={(e) => this.onHuggingFaceChange(e)}
-                  disabled={!this.getSetting('autotagger')}
-                />
-              </div>
-              <hr style={{ float: 'left', marginTop: '10px' }} />
-            </div>
-            <div className={'uk-margin-medium-bottom'}>
-              <label>Host</label>
-              <input
-                type="text"
-                className={'md-input md-input-width-medium'}
-                name={'autoTaggingHost'}
-                disabled={!this.getSetting('autotagger')}
-                value={this.state.host ?? ''}
-                onChange={(e) => this.onInputValueChanged(e, 'host')}
-              />
-            </div>
-            <div className="uk-margin-medium-bottom">
-              <label>Username</label>
-              <input
-                type="text"
-                className={'md-input md-input-width-medium'}
-                name={'userName'}
-                disabled={!this.getSetting('autotagger')}
-                value={this.state.userName ?? ''}
-                onChange={(e) => this.onInputValueChanged(e, 'userName')}
-              />
-            </div>
-            <div className="uk-margin-medium-bottom">
-              <label>Auth Password</label>
-              <input
-                type="password"
-                className={'md-input md-input-width-medium'}
-                name={'password'}
-                disabled={!this.getSetting('autotagger')}
-                value={this.state.password ?? ''}
-                onChange={(e) => this.onInputValueChanged(e, 'password')}
-              />
-            </div>
-            <div className="uk-margin-medium-bottom">
-              <label>Top N number</label>
-              <input
-                type="number"
-                className={'md-input md-input-width-medium'}
-                name={'topNNumber'}
-                disabled={!this.getSetting('autotagger')}
-                value={this.state.topNNumber ?? 1}
-                onChange={(e) => this.onTopNCountUpdate(e)}
-              />
-            </div>
-            <div className="uk-clearfix">
-              {/* <Button
-              text={'Test Settings'}
-              type={'button'}
-              flat={true}
-              waves={true}
-              style={'primary'}
-              extraClass={'uk-float-left'}
-              disabled={!this.getSetting('mailerEnabled')}
-              onClick={e => this.testMailerSettings(e)}
-            /> */}
-              <Button
-                text={'Apply'}
-                type={'submit'}
-                style={'success'}
-                extraClass={'uk-float-right'}
-                disabled={!this.getSetting('autotagger')}
-                waves={true}
-                flat={true}
-              />
-            </div>
-          </form>
-        </SettingItem>
+        <AutoTagger />
+        <TaggingStrategies />
 
         <SettingItem
           title={'Ticket Tags'}
