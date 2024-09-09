@@ -9,11 +9,11 @@ const COLLECTION = 'faq'
 * @property {Required<string>} answer - answer of the question
 * 
 * @typedef {import('mongoose').Document & FAQType} FAQ
-* @typedef {import('mongoose').Model<FAQ> & typeof statics} FAQModel
+* @typedef {import('mongoose').Model<FAQType, {}, {}, any, typeof FaqSchema> & typeof statics} FAQModel
 */
 
 
-/** @type {mongoose.Schema<FAQ, FAQModel>} */
+/** @type {mongoose.Schema<FAQ>} */
 const FaqSchema = new mongoose.Schema({
     question: { type: String, required: true },
     answer: { type: String, required: true },
