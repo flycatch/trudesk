@@ -45,17 +45,15 @@ emitter.any = function (events, callback) {
         callback()
       }
 
-      events = null
-    })
-  }
+const events = /** @type {const} */ ({
+    FAQ_UPDATED: 'faq:update',
+    FAQ_CREATED: 'faq:create',
+    FAQ_DELETED: 'faq:delete',
+})
 
-  for (const ev in events) {
-    if (events.hasOwnProperty(ev)) {
-      onEvent(ev)
-    }
-  }
-}
-
+/** @type {EventEmitter.<Record.<(typeof events)[keyof typeof events], any[]>>} */
+const emitter = new EventEmitter()
 module.exports = {
     emitter,
+    events
 }

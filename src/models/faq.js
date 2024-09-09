@@ -1,3 +1,4 @@
+const { emitter, events } = require("@/emitter");
 const mongoose = require("mongoose");
 
 const COLLECTION = 'faq'
@@ -21,6 +22,21 @@ const FaqSchema = new mongoose.Schema({
 FaqSchema.pre('save', function (next) {
     this.question = this.question.trim()
     this.answer = this.answer.trim()
+    this.wasNew = this.isNew
+    next()
+})
+
+FaqSchema.post('save', function (doc, next) {
+    if (this.wasNew) {
+        emitter.emit(events.FAQ_CREATED, doc)
+        return next()
+    }
+    emitter.emit(events.FAQ_UPDATED, doc)
+    return next()
+})
+
+FaqSchema.post('deleteOne', function(doc, next) {
+    emitter.emit(events.FAQ_DELETED, doc._id)
     next()
 })
 
