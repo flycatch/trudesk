@@ -1,6 +1,6 @@
 const { Setting } = require('@/models')
 const es = require('@elastic/elasticsearch')
-const emitter = require('@/emitter')
+const { emitter } = require('@/emitter')
 const logger = require('@/logger')
 
 /** @type{es.Client=} */

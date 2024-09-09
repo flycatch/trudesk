@@ -12,14 +12,14 @@
  *  Copyright (c) 2014-2019. All rights reserved.
  */
 
-var async = require('async')
-var _ = require('lodash')
-var moment = require('moment-timezone')
-var winston = require('../../../logger')
-var permissions = require('../../../permissions')
-var emitter = require('../../../emitter')
-var xss = require('xss')
-var sanitizeHtml = require('sanitize-html')
+const async = require('async')
+const _ = require('lodash')
+const moment = require('moment-timezone')
+const winston = require('../../../logger')
+const permissions = require('../../../permissions')
+const { emitter } = require('../../../emitter')
+const xss = require('xss')
+const sanitizeHtml = require('sanitize-html')
 
 var apiTickets = {}
 

@@ -17,8 +17,7 @@ const path = require('path')
 const nconf = require('nconf')
 const winston = require('../logger')
 const elasticsearch = require('@elastic/elasticsearch')
-const ESErrors = require('@elastic/elasticsearch').errors
-const emitter = require('../emitter')
+const { emitter } = require('../emitter')
 const moment = require('moment-timezone')
 const settingUtil = require('../settings/settingsUtil')
 

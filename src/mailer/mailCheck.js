@@ -19,7 +19,7 @@ const winston = require('../logger')
 const simpleParser = require('mailparser').simpleParser
 const cheerio = require('cheerio')
 
-const emitter = require('../emitter')
+const { emitter } = require('../emitter')
 const userSchema = require('../models/user')
 const groupSchema = require('../models/group')
 const ticketTypeSchema = require('../models/tickettype')

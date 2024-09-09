@@ -17,7 +17,7 @@ const _ = require('lodash')
 const winston = require('../logger')
 const userSchema = require('../models/user')
 const permissions = require('../permissions')
-const emitter = require('../emitter')
+const { emitter } = require('../emitter')
 const xss = require('xss')
 const path = require('path')
 

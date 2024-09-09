@@ -14,13 +14,15 @@
 
 'use strict'
 
-const eventEmitter = new (require('events').EventEmitter)()
+const { EventEmitter } = require('events')
 
-eventEmitter.all = function (events, callback) {
+const emitter = new EventEmitter()
+
+emitter.all = function (events, callback) {
   const eventList = events.slice(0)
 
   function onEvent (event) {
-    eventEmitter.on(events[event], function () {
+    emitter.on(events[event], function () {
       eventList.splice(eventList.indexOf(events[event]), 1)
 
       if (eventList.length === 0) {
@@ -36,9 +38,9 @@ eventEmitter.all = function (events, callback) {
   }
 }
 
-eventEmitter.any = function (events, callback) {
+emitter.any = function (events, callback) {
   function onEvent (event) {
-    eventEmitter.on(events[event], function () {
+    emitter.on(events[event], function () {
       if (events !== null) {
         callback()
       }
@@ -47,11 +49,13 @@ eventEmitter.any = function (events, callback) {
     })
   }
 
-  for (var ev in events) {
+  for (const ev in events) {
     if (events.hasOwnProperty(ev)) {
       onEvent(ev)
     }
   }
 }
 
-module.exports = eventEmitter
+module.exports = {
+    emitter,
+}

@@ -32,7 +32,7 @@ const settingSchema = new mongoose.Schema({
 })
 
 settingSchema.post('save', async function(doc, next) {
-  const emitter = require('@/emitter')
+  const { emitter } = require('@/emitter')
   emitter.emit('setting:updated', doc)
 })
 
