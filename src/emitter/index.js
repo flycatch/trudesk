@@ -21,6 +21,8 @@ const events = /** @type {const} */ ({
     FAQ_UPDATED: 'faq:update',
     FAQ_CREATED: 'faq:create',
     FAQ_DELETED: 'faq:delete',
+
+    SETTINGS_UPDATED: 'setting:updated'
 })
 
 /** @type {EventEmitter.<Record.<(typeof events)[keyof typeof events], any[]>>} */

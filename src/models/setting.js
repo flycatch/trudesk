@@ -32,8 +32,9 @@ const settingSchema = new mongoose.Schema({
 })
 
 settingSchema.post('save', async function(doc, next) {
-  const { emitter } = require('@/emitter')
-  emitter.emit('setting:updated', doc)
+  const { emitter, events } = require('@/emitter')
+  emitter.emit(events.SETTINGS_UPDATED, doc)
+  next()
 })
 
 const statics = {}
