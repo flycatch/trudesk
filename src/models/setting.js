@@ -18,8 +18,8 @@ const COLLECTION = 'settings'
 
 /**
  * @typedef {object} ISettings
- * @property {Required<string>} name - the setting name
- * @property {Required<any>} value - the setting value
+ * @property {string} name - the setting name
+ * @property {any} value - the setting value
  *
  * @typedef {mongoose.Document & ISettings} Setting
  * @typedef {mongoose.Model<Setting> & typeof statics} SettingModel
@@ -38,6 +38,17 @@ settingSchema.post('save', async function(doc, next) {
 })
 
 const statics = {}
+
+/** 
+  * A function to create settings
+  *
+  * @param {ISettings} setting
+  * @returns {Promise.<Setting>}
+  */
+statics.build = async function(setting) {
+  const settings =  new Setting(setting)
+  return settings.save()
+}
 
 /**
  * @this {SettingModel}
