@@ -162,6 +162,15 @@ function launchServer (db) {
           })
         },
         function (next) {
+          const { ElasticSearch } = require('./src/services/elasticsearch')
+          ElasticSearch.init()
+            .then(next)
+            .catch(err => {
+              winston.error(err)
+              return next()
+            })
+        },
+        function (next) {
           require('./src/socketserver')(ws)
           return next()
         },
