@@ -8,27 +8,18 @@ const { indices } = require('@/services/elasticsearch/indices')
 let client
 
 const ES = {}
+ES.enabled = false
 
 async function setup() {
   try {
-    const { value: enabled } = await Setting.getSettingByName('es:enable');
-    if (!enabled) {
+    if (!ES.enabled) {
       return
     }
     logger.info('Initializing elasticsearch client')
-    const client = await ES.getClient()
     await ES.checkConnection()
     await Promise.allSettled(indices.map(async index => {
       try {
-        if (await ES.exists(index)) {
-          return
-        }
-        logger.debug(`creating index ${index.name}`)
-        await client.indices.create(await index.schema())
-        await Setting.build({
-          name: `${index.name}:indexed`,
-          value: true
-        })
+        await ES.createIndex(index)
       } catch (e) {
         logger.error(`Failed to create index ${index.name}`, e)
       }
@@ -38,31 +29,15 @@ async function setup() {
   }
 }
 
-ES.checkConnection = async () => {
-  const { value: enabled } = await Setting.getSettingByName('es:enable')
-  if (!enabled) {
-    throw new Error('Elasticsearch not enabled')
-  }
-  try {
-    const client = await ES.getClient()
-    logger.info("checking elasticsearch connection")
-    await client.ping()
-    logger.info("Elasticsearch running... Connected.")
-  } catch (e) {
-    logger.warn(`Failed to check ES connection ${e}`)
-    throw new Error(`Connection failure to elasticsearch`)
-  }
-}
-
-
 ES.init = async () => {
   emitter.on(events.SETTINGS_UPDATED, async ({ name, value }) => {
     if (name !== 'es:host' && name !== 'es:port' && name !== 'es:enable') {
       return
     }
 
-    if (name === 'es:enable' && client) {
-      if (!value) {
+    if (name === 'es:enable' ) {
+      ES.enabled = !!value
+      if (client && !value) {
         await client.close()
         client = undefined
         return
@@ -77,6 +52,57 @@ ES.init = async () => {
   })
   await setup()
 }
+
+ES.checkConnection = async () => {
+  if (!ES.enabled) {
+    throw new Error('Elasticsearch not enabled')
+  }
+  try {
+    const client = await ES.getClient()
+    logger.info("checking elasticsearch connection")
+    await client.ping()
+    logger.info("Elasticsearch running... Connected.")
+  } catch (e) {
+    logger.warn(`Failed to check ES connection ${e}`)
+    throw new Error(`Connection failure to elasticsearch`)
+  }
+}
+
+
+
+/** 
+  * @param {import('@/services/elasticsearch/indices/types').Index} index
+  * @returns {Promise.<void>}
+  */
+ES.createIndex = async (index) => {
+  if (!ES.enabled) {
+    return
+  }
+  if (await ES.exists(index)) {
+    return
+  }
+  logger.debug(`creating index ${index.name}`)
+  const client = await ES.getClient()
+  await client.indices.create(await index.schema())
+  await Setting.set(`${index.name}:indexed`, true)
+}
+
+/** 
+  * @param {import('@/services/elasticsearch/indices/types').Index} index
+  * @returns {Promise.<void>}
+  */
+ES.deleteIndex = async (index) => {
+  if (!ES.enabled) {
+    return
+  }
+  if (!await ES.exists(index)) {
+    return
+  }
+  const client = await ES.getClient()
+  await client.indices.delete({ index: index.name })
+  await Setting.set(`${index.name}:indexed`, false)
+}
+
 
 /** 
   * Checks if an index exists.
@@ -115,6 +141,7 @@ ES.getClient = async function() {
   client = new es.Client({
     node: URI,
     pingTimeout: 10000,
+    requestTimeout: 10000,
     maxRetries: 5
   })
   return client
