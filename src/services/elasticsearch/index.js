@@ -33,7 +33,6 @@ async function setup() {
         logger.error(`Failed to create index ${index.name}`, e)
       }
     }))
-    logger.info('Elasticsearch initialzed')
   } catch (err) {
     logger.warn(`elastic search setup failed ${err}`)
   }
