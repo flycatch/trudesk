@@ -19,7 +19,7 @@ const { exponentialRetry } = require("@/helpers/utils")
 * @property {boolean} use_inference
 *
 * @typedef {object} EmbeddingsResponse
-* @property {Array.<number>} embeddings
+* @property {Array.<number>} embedding
 * @property {number} dim
 *
 */
@@ -89,10 +89,10 @@ TaggerClient.embeddings = async (data, host, auth) => {
         throw new Error(`Tagging API failed: ${message} - ${JSON.stringify(details)}`)
     }
 
-    /** @type {{result: { embeddings: Array.<number>, dim: number}}} */
-    const { result: { embeddings, dim } } = response.data
+    /** @type {{result: { embedding: Array.<number>, dim: number}}} */
+    const { result: { embedding, dim } } = response.data
 
-    const result = { embeddings, dim }
+    const result = { embedding, dim }
     logger.info(`Embeddings API responded with ${dim} dimension array`)
     return result
 }

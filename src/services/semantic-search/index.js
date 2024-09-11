@@ -131,7 +131,7 @@ Search.search = async (query, limit = 20) => {
     query: {
       knn: {
         field: "vector",
-        query_vector: response.embeddings,
+        query_vector: response.embedding,
         num_candidates: limit
       }
     }
@@ -176,7 +176,7 @@ Search.insert = async (source) => {
       id,
       document: {
         type: source.type,
-        vector: response.embeddings,
+        vector: response.embedding,
         source: source.document
       }
     })
@@ -220,7 +220,7 @@ Search.bulk = async (sources) => {
       bulk.push({ index: { _index: PublicQa.name, _id: id } })
       bulk.push({
         type: source.type,
-        vector: response.embeddings,
+        vector: response.embedding,
         source: source.document
       })
     }
@@ -265,7 +265,7 @@ Search.update = async (id, source) => {
       refresh: 'true',
       document: {
         type: source.type,
-        vector: response.embeddings,
+        vector: response.embedding,
         source: source.document
       }
     })
