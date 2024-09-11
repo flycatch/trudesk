@@ -6,6 +6,7 @@ const Faq = require("@/models/faq")
 const FaqSource = {}
 
 FaqSource.registerSource = async (search) => {
+  logger.info('Registering FAQ source')
   emitter.on(events.FAQ_CREATED, async (/** @type {import("@/models/faq").FAQ} */ faq) => {
     try {
       await search.insert({
