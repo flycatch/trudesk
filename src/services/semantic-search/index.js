@@ -126,18 +126,22 @@ Search.search = async (query, limit = 20) => {
 
   logger.debug(`Searching on search index for ${query}`)
   const client = await ElasticSearch.getClient()
-  return client.search({
-    index: PublicQa.name,
-    query: {
+
+  try {
+    const searchResponse = await client.knnSearch({
+      index: PublicQa.name,
       knn: {
         field: "vector",
         query_vector: response.embedding,
-        num_candidates: limit
+        num_candidates: 3 * limit,
+        k: limit,
       }
-    }
-  })
-
-
+    })
+    return searchResponse
+  } catch (err) {
+    logger.error(`SemanticSearch resulted in an error`, err)
+    throw new Error('Unexpected Error')
+  }
 }
 
 /**
