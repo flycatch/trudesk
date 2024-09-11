@@ -1,16 +1,18 @@
 {
+  "$schema": "https://json.schemastore.org/jsconfig",
   "compilerOptions": {
     "strict": true,
     "resolveJsonModule": true,
     "rootDir": "./",
     "baseUrl": "./src",
     "checkJs": true,
+    "allowJs": true,
     "jsx": "react",
     "paths": {
-      "@/*": "./*"
-    }
+      "@/*": ["./*"]
+    },
+    "typeRoots": [ "./node_modules/@types", "./@types"]
   },
   "exclude": [ "node_modules" ],
-  "include": ["src/**/*"]
 
 }
