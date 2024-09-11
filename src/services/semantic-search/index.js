@@ -22,6 +22,11 @@ const { PublicQa } = require("@/services/elasticsearch/indices/public-qa")
  * @property {boolean} enabled
  * @property {string} embeddingsHost
  * @property {string} embeddingsAuthToken
+ *
+ * @typedef {object} SearchResultItem
+ * @property {string} type
+ * @property {number} score
+ * @property {any} source
  */
 
 const Search = {}
@@ -107,6 +112,8 @@ Search.sync = async () => {
  *
  * @param {string} query
  * @param {number} limit
+ * @returns {Promise.<Array.<SearchResultItem> | undefined>}
+ *
  */
 Search.search = async (query, limit = 20) => {
   const settings = await getSettings()
@@ -116,7 +123,7 @@ Search.search = async (query, limit = 20) => {
   }
 
   if (!PublicQa.indexed) {
-    return
+    return undefined
   }
 
   const response = await TaggerClient.embeddings({
@@ -128,6 +135,7 @@ Search.search = async (query, limit = 20) => {
   const client = await ElasticSearch.getClient()
 
   try {
+    /** @type { import('@elastic/elasticsearch/lib/api/types').KnnSearchResponse.<SourceInfo> } */
     const searchResponse = await client.knnSearch({
       index: PublicQa.name,
       knn: {
@@ -137,7 +145,14 @@ Search.search = async (query, limit = 20) => {
         k: limit,
       }
     })
-    return searchResponse
+    return searchResponse.hits.hits.map(result => {
+      const source = result._source
+      return {
+        type: source?.type ?? '',
+        source: source?.source ?? {},
+        score: result._score ?? 0
+      }
+    }).filter(result => result !== undefined)
   } catch (err) {
     logger.error(`SemanticSearch resulted in an error`, err)
     throw new Error('Unexpected Error')
