@@ -3,7 +3,7 @@ const { Setting } = require('@/models')
 /** @type {import('./types').Index} */
 const PublicQa = {}
 
-PublicQa.name = "public-qa"
+PublicQa.name = "trudesk-public-qa"
 PublicQa.indexed = false
 
 PublicQa.schema = async function() {
