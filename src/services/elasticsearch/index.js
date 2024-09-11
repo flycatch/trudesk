@@ -35,7 +35,7 @@ ES.init = async () => {
       return
     }
 
-    if (name === 'es:enable' ) {
+    if (name === 'es:enable') {
       ES.enabled = !!value
       if (client && !value) {
         await client.close()
@@ -79,12 +79,13 @@ ES.createIndex = async (index) => {
     return
   }
   if (await ES.exists(index)) {
+    index.indexed = true
     return
   }
   logger.debug(`creating index ${index.name}`)
   const client = await ES.getClient()
   await client.indices.create(await index.schema())
-  await Setting.set(`${index.name}:indexed`, true)
+  index.indexed = true
 }
 
 /** 
@@ -100,7 +101,7 @@ ES.deleteIndex = async (index) => {
   }
   const client = await ES.getClient()
   await client.indices.delete({ index: index.name })
-  await Setting.set(`${index.name}:indexed`, false)
+  index.indexed = false
 }
 
 

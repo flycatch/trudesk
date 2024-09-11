@@ -4,6 +4,7 @@ const { Setting } = require('@/models')
 const PublicQa = {}
 
 PublicQa.name = "public-qa"
+PublicQa.indexed = false
 
 PublicQa.schema = async function() {
   const settings = await Setting.getSettingsObjectByName(
