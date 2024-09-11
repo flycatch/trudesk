@@ -8,10 +8,15 @@ const { indices } = require('@/services/elasticsearch/indices')
 let client
 
 const ES = {}
-ES.enabled = false
+/** @type {boolean=} */
+ES.enabled = undefined
 
 async function setup() {
   try {
+    if (ES.enabled === undefined) {
+      const { value: enabled } = await Setting.getSettingByName('es:enable')
+      ES.enabled = enabled
+    }
     if (!ES.enabled) {
       return
     }
