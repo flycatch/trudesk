@@ -24,6 +24,9 @@ async function setup() {
         logger.error(`Failed to create index ${index.name}`, e)
       }
     }))
+
+    const { Search } = require('@/services/semantic-search')
+    await Search.init()
   } catch (err) {
     logger.warn(`elastic search setup failed ${err}`)
   }
