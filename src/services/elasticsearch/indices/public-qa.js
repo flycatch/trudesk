@@ -16,7 +16,7 @@ PublicQa.schema = async function() {
       properties: {
         type: { type: 'keyword' },
         source: { type: 'object' },
-        source_vector: {
+        vector: {
           type: 'dense_vector',
           dims: settings.embeddings_dimension,
           index: true,
