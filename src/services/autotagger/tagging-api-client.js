@@ -71,7 +71,7 @@ TaggerClient.classify = async (data, host, auth) => {
  * @returns {Promise.<EmbeddingsResponse>}
  */
 TaggerClient.embeddings = async (data, host, auth) => {
-    logger.info('requesting for embeddings')
+    logger.debug('requesting for embeddings')
     const url = new URL('/api/v2/embeddings', host).href
     const response = await axios.request({
         url,
@@ -84,7 +84,7 @@ TaggerClient.embeddings = async (data, host, auth) => {
     })
 
     if (response.status !== 200) {
-        logger.info(`Embeddings API responded with ${JSON.stringify(response.data)}`)
+        logger.debug(`Embeddings API responded with ${JSON.stringify(response.data)}`)
         const { error: { message, details } } = response.data
         throw new Error(`Tagging API failed: ${message} - ${JSON.stringify(details)}`)
     }
@@ -93,7 +93,7 @@ TaggerClient.embeddings = async (data, host, auth) => {
     const { result: { embedding, dim } } = response.data
 
     const result = { embedding, dim }
-    logger.info(`Embeddings API responded with ${dim} dimension array`)
+    logger.debug(`Embeddings API responded with ${dim} dimension array`)
     return result
 }
 
