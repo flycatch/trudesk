@@ -100,7 +100,7 @@ apiUtils.catchAsync = function (handler, errHandler) {
                     return errHandler(err)
                 }
                 logger.warn(`failed ${req.path} - ${err}`)
-                return this.sendApiError(res, 500, err)
+                return apiUtils.sendApiError(res, 500, err)
             })
     }
 }
