@@ -44,17 +44,17 @@ FaqSource.registerSource = async (search) => {
 
 
 FaqSource.syncSource = async (search) => {
-  const stream = Faq.find()
-    .lean()
-    .cursor()
+  return new Promise((resolve, reject) => {
+    const stream = Faq.find()
+      .lean()
+      .cursor()
 
-  /** @type {Array.<import('@/services/semantic-search').Source>} */
-  let bulk = []
+    /** @type {Array.<import('@/services/semantic-search').Source>} */
+    let bulk = []
 
-  const BATCH_SIZE = 10
-  let count = 0
-  stream
-    .on('data', async document => {
+    const BATCH_SIZE = 10
+    let count = 0
+    stream.on('data', async document => {
       stream.pause()
       count++
       bulk.push({
@@ -69,15 +69,16 @@ FaqSource.syncSource = async (search) => {
         bulk = []
       }
       stream.resume()
-    })
-    .on('err', (err) => {
+    }).on('err', (err) => {
       logger.error(err)
-      throw err
+      reject(err)
+    }).on('close', async () => {
+      logger.debug(`Total indexed ${count}`)
+      if (bulk.length > 0) {
+        await search.bulk(bulk)
+      }
+      resolve()
     })
-  .on('close', async () => {
-    logger.debug(`Total indexed ${count}`)
-    await search.bulk(bulk)
-    bulk = []
   })
 }
 
