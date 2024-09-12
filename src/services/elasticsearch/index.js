@@ -23,12 +23,6 @@ async function setup() {
       ES.enabled = enabled
     }
     if (!ES.enabled) {
-      if (global.esRebuilding) {
-        // if rebuild is in progress kill it
-        logger.warn(`Rebuild process [${ES.__rebuildFork?.pid}] is ongoing. Force stoping the rebuild process`)
-        ES.__rebuildFork?.kill('SIGTERM')
-        ES.__rebuildFork = undefined
-      }
       return
     }
     logger.info('Initializing elasticsearch client')
@@ -62,8 +56,15 @@ ES.init = async () => {
     if (name === 'es:enable') {
       ES.enabled = !!value
       if (client && !value) {
+        // es disabled. close the existing connection and stop ongoing rebuilds
         await client.close()
         client = undefined
+        if (global.esRebuilding) {
+          // if rebuild is in progress kill it
+          logger.warn(`Rebuild process [${ES.__rebuildFork?.pid}] is ongoing. Force stoping the rebuild process`)
+          ES.__rebuildFork?.kill('SIGTERM')
+          ES.__rebuildFork = undefined
+        }
         return
       }
     }
