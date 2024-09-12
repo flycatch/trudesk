@@ -10,7 +10,9 @@
  Created:    09/08/2018
  Author:     Chris Brame
 
+@deprecated since v1.6.0
  **/
+
 
 const _ = require('lodash')
 const path = require('path')
@@ -49,6 +51,9 @@ const checkConnection = callback => {
   })
 }
 
+/**
+ * @deprecated since v1.6.0 replaced in favour of src/services/elasticsearch
+ */
 ES.testConnection = async callback => {
   return new Promise((resolve, reject) => {
     ;(async () => {
@@ -74,6 +79,9 @@ ES.testConnection = async callback => {
   })
 }
 
+/**
+ * @deprecated since v1.6.0 replaced in favour of src/services/elasticsearch
+ */
 ES.setupHooks = () => {
   const ticketSchema = require('../models/ticket')
 
@@ -195,6 +203,9 @@ ES.setupHooks = () => {
   })
 }
 
+/**
+ * @deprecated since v1.6.0 replaced in favour of src/services/elasticsearch
+ */
 ES.buildClient = host => {
   if (ES.esclient) ES.esclient.close()
 
@@ -205,6 +216,9 @@ ES.buildClient = host => {
   })
 }
 
+/**
+ * @deprecated since v1.6.0 replaced in favour of src/services/elasticsearch
+ */
 ES.rebuildIndex = async () => {
   if (global.esRebuilding) {
     winston.warn('Index Rebuild attempted while already rebuilding!')
@@ -255,6 +269,10 @@ ES.rebuildIndex = async () => {
   }
 }
 
+
+/**
+ * @deprecated since v1.6.0 replaced in favour of src/services/elasticsearch
+ */
 ES.getIndexCount = async callback => {
   return new Promise((resolve, reject) => {
     if (_.isUndefined(ES.esclient)) {
@@ -272,6 +290,9 @@ ES.getIndexCount = async callback => {
   })
 }
 
+/**
+ * @deprecated since v1.6.0 replaced in favour of src/services/elasticsearch
+ */
 ES.init = async callback => {
   try {
     global.esStatus = 'Not Configured'
@@ -310,6 +331,9 @@ ES.init = async callback => {
   }
 }
 
+/**
+ * @deprecated since v1.6.0 replaced in favour of src/services/elasticsearch
+ */
 ES.checkConnection = async callback => {
   try {
     await checkConnection()
