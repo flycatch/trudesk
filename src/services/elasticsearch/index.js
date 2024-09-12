@@ -1,3 +1,6 @@
+require('module-alias/register')
+const { join } = require('path')
+const { fork, ChildProcess } = require('child_process')
 const es = require('@elastic/elasticsearch')
 const { Setting } = require('@/models')
 const { emitter, events } = require('@/emitter')
@@ -10,6 +13,8 @@ let client
 const ES = {}
 /** @type {boolean=} */
 ES.enabled = undefined
+/** @type {ChildProcess=} */
+ES.__rebuildFork = undefined
 
 async function setup() {
   try {
@@ -18,6 +23,12 @@ async function setup() {
       ES.enabled = enabled
     }
     if (!ES.enabled) {
+      if (global.esRebuilding) {
+        // if rebuild is in progress kill it
+        logger.warn(`Rebuild process [${ES.__rebuildFork?.pid}] is ongoing. Force stoping the rebuild process`)
+        ES.__rebuildFork?.kill('SIGTERM')
+        ES.__rebuildFork = undefined
+      }
       return
     }
     logger.info('Initializing elasticsearch client')
@@ -59,6 +70,45 @@ ES.init = async () => {
     await setup()
   })
   await setup()
+}
+
+ES.rebuild = async () => {
+  if (global.esRebuilding) {
+    logger.warn('Index rebuild attempted while already rebuilding!.')
+    return
+  }
+  try {
+    if (!ES.enabled) {
+      return
+    }
+    await ES.checkConnection()
+    global.esStatus = 'Rebuilding...'
+
+    ES.__rebuildFork = fork(join(__dirname, 'rebuild-index.js'), {
+      env: {
+        FORK: '1',
+        NODE_ENV: global.env,
+        MONGODB_URI: global.CONNECTION_URI
+      }
+    })
+
+    global.esRebuilding = true
+    global.forks.push({ name: 'elasticsearchIndexRebuild', fork: ES.__rebuildFork })
+
+    ES.__rebuildFork.once('message', function(/** @type {{  success: boolean } } */ data) {
+      global.esStatus = data.success ? 'Connected' : 'Error'
+      global.esRebuilding = false
+    })
+
+    ES.__rebuildFork.on('exit', function() {
+      logger.debug('Rebuilding Process Closed: ' + ES.__rebuildFork?.pid)
+      global.esRebuilding = false
+      global.forks = global.forks.filter(i => i.name !== 'elasticsearchIndexRebuild')
+      ES.__rebuildFork = undefined
+    })
+  } catch (e) {
+    logger.error(e)
+  }
 }
 
 ES.checkConnection = async () => {
