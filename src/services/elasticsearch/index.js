@@ -48,7 +48,12 @@ async function setup() {
   }
 }
 
+/**
+ * Initializes the client and registers hooks if elastic search is enabled.
+ * @returns {Promise.<void>}
+ */
 ES.init = async () => {
+  // If es:enable flag is updated this hook will reenable es and creates indexes
   emitter.on(events.SETTINGS_UPDATED, async ({ name, value }) => {
     if (name !== 'es:host' && name !== 'es:port' && name !== 'es:enable') {
       return
@@ -72,6 +77,13 @@ ES.init = async () => {
   await setup()
 }
 
+/**
+ * Deletes and rebuilds all indexes, registered through this client.
+ *
+ * TODO: replace old client with this one
+ *
+ * @returns {Promise.<void>}
+ */
 ES.rebuild = async () => {
   if (global.esRebuilding) {
     logger.warn('Index rebuild attempted while already rebuilding!.')
@@ -127,8 +139,9 @@ ES.checkConnection = async () => {
 }
 
 
-
 /** 
+  * Creates and elastic index.
+  *
   * @param {import('@/services/elasticsearch/indices/types').Index} index
   * @returns {Promise.<void>}
   */
@@ -147,6 +160,8 @@ ES.createIndex = async (index) => {
 }
 
 /** 
+  * Deletes an index if it exists.
+  *
   * @param {import('@/services/elasticsearch/indices/types').Index} index
   * @returns {Promise.<void>}
   */
@@ -183,6 +198,7 @@ ES.exists = async (index) => {
 
 /**
  * Builds the elasticsearch client
+ *
  * @returns {Promise.<es.Client>}
  */
 ES.getClient = async function() {
