@@ -55,23 +55,28 @@ FaqSource.syncSource = async (search) => {
     const BATCH_SIZE = 10
     let count = 0
     stream.on('data', async document => {
-      stream.pause()
-      count++
-      bulk.push({
-        type: 'FAQ',
-        embeddedField: 'question',
-        idField: '_id',
-        document
-      })
+      try {
+        stream.pause()
+        count++
+        bulk.push({
+          type: 'FAQ',
+          embeddedField: 'question',
+          idField: '_id',
+          document
+        })
 
-      if (count % BATCH_SIZE === 1) {
-        await search.bulk(bulk)
-        bulk = []
+        if (count % BATCH_SIZE === 1) {
+          await search.bulk(bulk)
+          bulk = []
+        }
+        stream.resume()
+      } catch (err) {
+        reject(err)
       }
-      stream.resume()
     }).on('err', (err) => {
       logger.error(err)
       reject(err)
+      stream.close()
     }).on('close', async () => {
       logger.debug(`Total indexed ${count}`)
       if (bulk.length > 0) {
