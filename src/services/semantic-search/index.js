@@ -244,7 +244,11 @@ Search.bulk = async (sources) => {
       })
     }
 
-    await client.bulk({ timeout: '3m', operations: bulk })
+    const response = await client.bulk({ timeout: '3m', operations: bulk })
+    if (response.errors) {
+      logger.error(`failed to bulk insert ${JSON.stringify(response.items)}`)
+      return
+    }
     logger.debug(`Sent ${bulk.length} documents to es`)
   } catch (e) {
     logger.error(`Failed to bulk insert documents to es : ${e}`)
