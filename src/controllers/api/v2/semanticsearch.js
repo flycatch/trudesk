@@ -15,7 +15,7 @@ const api = {}
 api.search = catchAsync(async (req, res) => {
   const [query, errors] = validate(SearchRequest, /** @type {SearchQuery} */(req.query))
   if (errors) {
-    logger.error(errors)
+    logger.error(`semnaticsearch validation error:${errors}`)
     return sendApiError(res, 400, errors)
   }
   const results = await Search.search(query.query, query.limit) ?? []
