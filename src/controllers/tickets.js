@@ -663,7 +663,7 @@ ticketsController.uploadAttachment = function (req, res) {
   })
 
   const object = {
-    ownerId: req.user._id
+    ownerId: req.user?._id
   }
   let error
 
