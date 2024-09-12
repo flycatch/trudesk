@@ -1,4 +1,5 @@
 const { join } = require('path')
+const nconf = require('nconf')
 const { fork, ChildProcess } = require('child_process')
 const es = require('@elastic/elasticsearch')
 const { Setting } = require('@/models')
@@ -206,11 +207,17 @@ ES.getClient = async function() {
   }
 
   let URI = process.env.ELASTICSEARCH_URI
-  if (!URI) {
+  if (URI === undefined || URI.trim() === '') {
     const settings = await Setting.getSettingsObjectByName(
       ['es:host', 'es:port']
     )
     URI = `${settings.es_host}:${settings.es_port}`
+  }
+  if (URI === undefined || URI.trim() === '') {
+    URI = `${nconf.get('es:host')}:${nconf.get('es:port')}`
+  }
+  if (URI === undefined || URI.trim() === '') {
+    throw new Error('Elasticsearch host not configured')
   }
   client = new es.Client({
     node: URI,
