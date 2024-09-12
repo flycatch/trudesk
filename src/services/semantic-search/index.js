@@ -116,6 +116,9 @@ Search.sync = async () => {
  *
  */
 Search.search = async (query, limit = 20) => {
+  if (query === undefined || query.trim() === '') {
+    return undefined
+  }
   const settings = await getSettings()
   if (!settings.enabled) {
     logger.warn('[semanticsearch] search called when feature is disabled')
@@ -166,6 +169,9 @@ Search.search = async (query, limit = 20) => {
  * @returns {Promise.<void>}
  */
 Search.insert = async (source) => {
+  if (source === undefined) {
+    return
+  }
   const settings = await getSettings()
   if (!settings.enabled) {
     logger.debug('[semanticsearch] insert called when disabled')
@@ -264,6 +270,9 @@ Search.bulk = async (sources) => {
   * @returns {Promise.<void>}
   */
 Search.update = async (id, source) => {
+  if (id === undefined) {
+    return
+  }
   const setting = await getSettings()
   if (!setting.enabled) {
     return
@@ -302,6 +311,9 @@ Search.update = async (id, source) => {
   * @returns {Promise.<void>}
   */
 Search.delete = async (id) => {
+  if (id === undefined) {
+    return
+  }
   const settings = await getSettings()
   if (!settings.enabled) {
     return
