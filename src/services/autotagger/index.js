@@ -2,8 +2,8 @@ const logger = require('@/logger')
 
 const Setting = require('@/models/setting')
 const Tag = require('@/models/tag')
-const { TaggerClient } = require('@/services/autotagger/tagging-api-client')
 const { ClassifierStrategyFactory } = require('@/services/autotagger/strategies')
+const { AIClient } = require('@/services/ai-client')
 
 /** 
  * Tags a ticket based on its title and description using the tagger API.
@@ -53,7 +53,7 @@ const tagTicket = async (ticket) => {
     return undefined
   }
 
-  const response = await TaggerClient.classify({
+  const response = await AIClient.classify({
     text: `${ticket.subject}\n${ticket.issue}`,
     labels: tags.map(tag => tag.name),
     use_inference: tagging_inference_enable

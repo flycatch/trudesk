@@ -25,7 +25,7 @@ const { exponentialRetry } = require("@/helpers/utils")
 */
 
 
-const TaggerClient = {}
+const AIClient = {}
 
 const httpClient = axios.create()
 exponentialRetry(httpClient)
@@ -37,7 +37,7 @@ exponentialRetry(httpClient)
 * @param {string} auth - The basic auth token
 * @returns {Promise.<ClassifyResponse>}
 */
-TaggerClient.classify = async (data, host, auth) => {
+AIClient.classify = async (data, host, auth) => {
     logger.info('requesting tagging API')
     const url = new URL('/api/v2/classify', host).href
     const response = await axios.request({
@@ -70,7 +70,7 @@ TaggerClient.classify = async (data, host, auth) => {
  * @param {string} auth - The basic auth token
  * @returns {Promise.<EmbeddingsResponse>}
  */
-TaggerClient.embeddings = async (data, host, auth) => {
+AIClient.embeddings = async (data, host, auth) => {
     logger.debug('requesting for embeddings')
     const url = new URL('/api/v2/embeddings', host).href
     const response = await axios.request({
@@ -99,5 +99,5 @@ TaggerClient.embeddings = async (data, host, auth) => {
 
 
 module.exports = {
-    TaggerClient
+    AIClient
 }

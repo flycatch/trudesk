@@ -5,6 +5,7 @@ const { emitter, events } = require('@/emitter')
 const { ElasticSearch } = require("@/services/elasticsearch")
 const { sources } = require("@/services/semantic-search/sources")
 const { PublicQa } = require("@/services/elasticsearch/indices/public-qa")
+const { AIClient } = require("@/services/ai-client")
 
 /**
  * @typedef {object} Source
@@ -148,7 +149,7 @@ Search.search = async (query, limit = 20) => {
     return undefined
   }
 
-  const response = await TaggerClient.embeddings({
+  const response = await AIClient.embeddings({
     text: `${query}`,
     use_inference: false
   }, settings.embeddingsHost, settings.embeddingsAuthToken)
@@ -206,7 +207,7 @@ Search.insert = async (source) => {
   }
 
   try {
-    const response = await TaggerClient.embeddings({
+    const response = await AIClient.embeddings({
       text: `${source.document[source.embeddedField]}`,
       use_inference: false
     }, settings.embeddingsHost, settings.embeddingsAuthToken)
@@ -255,7 +256,7 @@ Search.bulk = async (sources) => {
     const bulk = []
 
     for (const source of sources) {
-      const response = await TaggerClient.embeddings({
+      const response = await AIClient.embeddings({
         text: `${source.document[source.embeddedField]}`,
         use_inference: false,
       }, settings.embeddingsHost, settings.embeddingsAuthToken)
@@ -302,7 +303,7 @@ Search.update = async (id, source) => {
   }
 
   try {
-    const response = await TaggerClient.embeddings({
+    const response = await AIClient.embeddings({
       text: `${source.document[source.embeddedField]}`,
       use_inference: false
     }, setting.embeddingsHost, setting.embeddingsAuthToken)
