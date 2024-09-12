@@ -99,4 +99,9 @@ module.exports = function (middleware, router, controllers) {
 
   // PUBLIC FAQ
   router.get('/api/v2/public/faqs', faq.findAll)
+
+  // Semanticsearch
+  /** @type {typeof import('./semanticsearch')} */
+  const semanticSearch = apiv2.semanticsearch
+  router.get('/api/v2/public/search', semanticSearch.search)
 }
