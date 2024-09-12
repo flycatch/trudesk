@@ -9,11 +9,13 @@ FaqSource.registerSource = async (search) => {
   logger.info('Registering FAQ source')
   emitter.on(events.FAQ_CREATED, async (/** @type {import("@/models/faq").FAQ} */ faq) => {
     try {
+      const document = faq.toObject()
+      delete document.__v
       await search.insert({
         type: "FAQ",
         idField: "_id",
         embeddedField: "question",
-        document: faq.toObject()
+        document,
       })
     } catch (err) {
       logger.warn(`Elasticsearch failure: ${err}`)
@@ -22,11 +24,13 @@ FaqSource.registerSource = async (search) => {
 
   emitter.on(events.FAQ_UPDATED, async (/** @type {import("@/models/faq").FAQ */ faq) => {
     try {
+      const document = faq.toObject()
+      delete document.__v
       await search.update(faq._id.toString(), {
         type: "FAQ",
         idField: "_id",
         embeddedField: "question",
-        document: faq.toObject()
+        document, 
       })
     } catch (err) {
       logger.warn(`Elasticsearch failure: ${err}`)
@@ -58,6 +62,7 @@ FaqSource.syncSource = async (search) => {
       try {
         stream.pause()
         count++
+        delete document.__v
         bulk.push({
           type: 'FAQ',
           embeddedField: 'question',
