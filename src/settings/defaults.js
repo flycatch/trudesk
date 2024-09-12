@@ -749,6 +749,49 @@ function maintenanceModeDefault (callback) {
   })
 }
 
+/**
+ * @param {async.AsyncResultObjectCallback.<any>} callback
+ * @returns {Promise.<void>}
+ */
+async function semanticsearchDefaults(callback) {
+  try {
+
+    const {
+      embeddings_dimension,
+      embeddings_similarityFunction,
+      semanticsearch_enable
+    } = await SettingsSchema.getSettingsObjectByName([
+      'embeddings:dimension',
+      'embeddings:similarityFunction',
+      'semanticsearch:enable',
+    ])
+
+    if (embeddings_dimension === undefined || embeddings_dimension < 0) {
+      await SettingsSchema.build({
+        name: "embeddings:dimension",
+        value: process.env.SEARCH_EMBEDDINGS_DIMENSION ?? 768
+      })
+    }
+
+    if (embeddings_similarityFunction === undefined) {
+      await SettingsSchema.create({
+        name: "embeddings:similarityFunction",
+        value: process.env.SEARCH_EMBEDDINGS_SIMILARITY ?? 'cosine'
+      })
+    }
+
+    if (semanticsearch_enable === undefined) {
+      await SettingsSchema.create({
+        name: "semanticsearch:enable",
+        value: false
+      })
+    }
+    callback(undefined, {})
+  } catch (err) {
+    callback(err, {})
+  }
+}
+
 settingsDefaults.init = function (callback) {
   winston.debug('Checking Default Settings...')
   async.series(
@@ -791,6 +834,9 @@ settingsDefaults.init = function (callback) {
       },
       function (done) {
         return elasticSearchConfToDB(done)
+      },
+      function (done) {
+        return semanticsearchDefaults(done)
       },
       function (done) {
         return maintenanceModeDefault(done)
