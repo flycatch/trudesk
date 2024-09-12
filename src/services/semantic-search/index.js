@@ -22,6 +22,9 @@ const { PublicQa } = require("@/services/elasticsearch/indices/public-qa")
  * @property {boolean} enabled
  * @property {string} embeddingsHost
  * @property {string} embeddingsAuthToken
+ * @property {boolean} initialized
+ * @property {boolean} searchEnabled
+ * @property {boolean} esEnabled
  *
  * @typedef {object} SearchResultItem
  * @property {string} type
@@ -53,23 +56,38 @@ async function getSettings() {
     enabled: (!!settings.es_enable) && (!!settings.semanticsearch_enable),
     embeddingsHost: settings.tagger_host,
     embeddingsAuthToken: settings.tagger_basicToken,
+    searchEnabled: settings.semanticsearch_enable,
+    esEnabled: settings.es_enable,
+    initialized: false,
   }
   return Search.__settings
 }
 
-const onSettingsUpdate = async ( /** @type {import('@/models/setting').Setting} */{ name }) => {
+const onSettingsUpdate = async ( /** @type {import('@/models/setting').Setting} */{ name, value }) => {
   if (!keys.includes(name)) {
     return
   }
-  Search.__settings = undefined
-  Search.__settings = await getSettings()
+
+  const settings = await getSettings()
+  switch (name) {
+    case 'es:enable': settings.esEnabled = value; break
+    case 'semanticsearch:enable': settings.searchEnabled = value; break
+    case 'tagger:host': settings.embeddingsHost = value; break
+    case 'tagger:basicToken': settings.embeddingsAuthToken = value; break
+    default: break
+  }
+  settings.enabled = settings.esEnabled && settings.searchEnabled
+  // Initialize search if not already
+  if (!settings.initialized && settings.enabled) {
+    await Search.init()
+  }
 }
 
 Search.init = async () => {
   emitter.removeListener(events.SETTINGS_UPDATED, onSettingsUpdate)
   emitter.on(events.SETTINGS_UPDATED, onSettingsUpdate)
   const settings = await getSettings()
-  if (!settings.enabled) {
+  if (!settings.enabled || settings.initialized) {
     return
   }
   logger.info('Initializing semanticsearch client')
@@ -81,6 +99,7 @@ Search.init = async () => {
     }
     logger.warn(`unfulfilled source detected. Reason: ${result.reason}`)
   }
+  settings.initialized = true
   logger.info('Semanticsearch initialized')
 }
 

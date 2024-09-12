@@ -35,8 +35,6 @@ async function setup() {
       }
     }))
 
-    const { Search } = require('@/services/semantic-search')
-    await Search.init()
   } catch (err) {
     logger.warn(`elastic search setup failed ${err}`)
   }
@@ -76,6 +74,8 @@ ES.init = async () => {
     await setup()
   })
   await setup()
+  const { Search } = require('@/services/semantic-search')
+  await Search.init()
 }
 
 /**
