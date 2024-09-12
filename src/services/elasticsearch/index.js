@@ -1,4 +1,3 @@
-require('module-alias/register')
 const { join } = require('path')
 const { fork, ChildProcess } = require('child_process')
 const es = require('@elastic/elasticsearch')
