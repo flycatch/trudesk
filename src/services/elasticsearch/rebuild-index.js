@@ -14,7 +14,7 @@ async function setupDatabase() {
         return reject(err)
       }
       resolve(db)
-    }, 'mongodb://trudesk_dev:password@localhost:27017/trudesk')
+    }, process.env.MONGODB_URI)
   })
 }
 
