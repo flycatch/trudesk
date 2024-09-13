@@ -146,6 +146,15 @@ class TicketsSettings extends React.Component {
     });
   }
 
+  onOTPEnableChange(e) {
+    this.props.updateSetting({
+      name: 'otp:enable',
+      value: e.target.checked,
+      stateName: 'enableOTP',
+      noSnackbar: true,
+    });
+  }
+
   onAllowAgentUserTicketsChange(e) {
     this.props.updateSetting({
       name: 'allowAgentUserTickets:enable',
@@ -278,6 +287,24 @@ class TicketsSettings extends React.Component {
               checked={this.getSetting('allowPublicTickets')}
               onChange={(e) => {
                 this.onAllowPublicTicketsChange(e);
+              }}
+            />
+          }
+        />
+        <SettingItem
+          title={'OTP Verification'}
+          subtitle={
+            <div>
+              Enable OTP verification to confirm user email before creating a ticket.
+            </div>
+          }
+          component={
+            <EnableSwitch
+              stateName={'enableOTP'}
+              label={'Enable'}
+              checked={this.getSetting('enableOTP')}
+              onChange={(e) => {
+                this.onOTPEnableChange(e);
               }}
             />
           }
