@@ -6,7 +6,7 @@ const { Search } = require("@/services/semantic-search")
 
 
 /**
-  * @typedef {Object.<string, any> & { query: string; limit: number }} SearchQuery
+  * @typedef {Object.<string, any> & { query: string; limit: number; score: number }} SearchQuery
   *
   */
 
@@ -18,7 +18,7 @@ api.search = catchAsync(async (req, res) => {
     logger.error(`semnaticsearch validation error:${errors}`)
     return sendApiError(res, 400, errors)
   }
-  const results = await Search.search(query.query, query.limit) ?? []
+  const results = await Search.search(query.query, query.limit, query.score) ?? []
   return sendApiSuccess(res, { results })
 })
 

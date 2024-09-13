@@ -120,12 +120,13 @@ Search.sync = async () => {
 /** 
  * Searches the query embeddings against vectors inside the public-qa index
  *
- * @param {string} query
- * @param {number} limit
+ * @param {string} query The query to search
+ * @param {number} limit The no:of results that should be returned
+ * @param {number} minScore The minimum score the results should have
  * @returns {Promise.<Array.<SearchResultItem> | undefined>}
  *
  */
-Search.search = async (query, limit = 20) => {
+Search.search = async (query, limit = 20, minScore = 0.5) => {
   if (query === undefined || query.trim() === '') {
     return undefined
   }
@@ -158,14 +159,18 @@ Search.search = async (query, limit = 20) => {
         k: limit,
       }
     })
-    return searchResponse.hits.hits.map(result => {
+    return /** @type {Array.<SearchResultItem>} */ (searchResponse.hits.hits.map(result => {
       const source = result._source
+      const score = result._score ?? 0
+      if (score < minScore) {
+        return undefined
+      }
       return {
         type: source?.type ?? '',
         source: source?.source ?? {},
         score: result._score ?? 0
       }
-    }).filter(result => result !== undefined)
+    }).filter(result => result !== undefined))
   } catch (err) {
     logger.error(`SemanticSearch resulted in an error`, err)
     throw new Error('Unexpected Error')
