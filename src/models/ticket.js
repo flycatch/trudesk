@@ -152,7 +152,7 @@ ticketSchema.pre('save', function (next) {
 
 ticketSchema.post('save', async function (doc, next) {
   if (!this.wasNew) {
-    const emitter = require('../emitter')
+    const { emitter } = require('../emitter')
     try {
       const savedTicket = await doc.populate([
         {

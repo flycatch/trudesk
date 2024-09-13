@@ -12,13 +12,13 @@
 
  **/
 
-var _ = require('lodash')
-var async = require('async')
-var emitter = require('../../../emitter')
-var winston = require('winston')
-var sanitizeHtml = require('sanitize-html')
-var SettingsSchema = require('../../../models/setting')
-var settingsUtil = require('../../../settings/settingsUtil')
+const _ = require('lodash')
+const async = require('async')
+const {  emitter  } = require('../../../emitter')
+const winston = require('winston')
+const sanitizeHtml = require('sanitize-html')
+const SettingsSchema = require('../../../models/setting')
+const settingsUtil = require('../../../settings/settingsUtil')
 const socketEventConsts = require('../../../socketio/socketEventConsts')
 
 var apiSettings = {}

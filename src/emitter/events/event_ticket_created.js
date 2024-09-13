@@ -32,6 +32,7 @@ const sharedVars = require('../../socketio/index').shared
 const socketEvents = require('../../socketio/socketEventConsts')
 const util = require('../../helpers/utils')
 const { tagTicket } = require('@/services/autotagger')
+const { AUTOTAGGER_ENABLE } = require('@/settings/settings-keys')
 
 const sendSocketUpdateToUser = (user, ticket) => {
   socketUtils.sendToUser(
@@ -241,7 +242,7 @@ module.exports = async (data) => {
   const ticketObject = data.ticket
 
   const ticket = await Ticket.getTicketById(ticketObject._id)
-  const settings = await Setting.getSettingsObjectByName(['gen:siteurl', 'mailer:enable', 'beta:email', 'autotagger:enable'])
+  const settings = await Setting.getSettingsObjectByName(['gen:siteurl', 'mailer:enable', 'beta:email', AUTOTAGGER_ENABLE])
 
   await sendNotifications(ticket, settings)
   await autoTagTicket(ticket, settings)

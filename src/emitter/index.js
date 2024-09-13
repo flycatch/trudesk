@@ -14,44 +14,20 @@
 
 'use strict'
 
-const eventEmitter = new (require('events').EventEmitter)()
+const { EventEmitter } = require('events')
 
-eventEmitter.all = function (events, callback) {
-  const eventList = events.slice(0)
 
-  function onEvent (event) {
-    eventEmitter.on(events[event], function () {
-      eventList.splice(eventList.indexOf(events[event]), 1)
+const events = /** @type {const} */ ({
+    FAQ_UPDATED: 'faq:update',
+    FAQ_CREATED: 'faq:create',
+    FAQ_DELETED: 'faq:delete',
 
-      if (eventList.length === 0) {
-        callback()
-      }
-    })
-  }
+    SETTINGS_UPDATED: 'setting:updated'
+})
 
-  for (const ev in events) {
-    if (Object.hasOwn(events, ev)) {
-      onEvent(ev)
-    }
-  }
+/** @type {EventEmitter.<Record.<(typeof events)[keyof typeof events], any[]>>} */
+const emitter = new EventEmitter()
+module.exports = {
+    emitter,
+    events
 }
-
-eventEmitter.any = function (events, callback) {
-  function onEvent (event) {
-    eventEmitter.on(events[event], function () {
-      if (events !== null) {
-        callback()
-      }
-
-      events = null
-    })
-  }
-
-  for (var ev in events) {
-    if (events.hasOwnProperty(ev)) {
-      onEvent(ev)
-    }
-  }
-}
-
-module.exports = eventEmitter

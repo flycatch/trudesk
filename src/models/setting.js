@@ -18,8 +18,8 @@ const COLLECTION = 'settings'
 
 /**
  * @typedef {object} ISettings
- * @property {Required<string>} name - the setting name
- * @property {Required<any>} value - the setting value
+ * @property {string} name - the setting name
+ * @property {any} value - the setting value
  *
  * @typedef {mongoose.Document & ISettings} Setting
  * @typedef {mongoose.Model<Setting> & typeof statics} SettingModel
@@ -32,11 +32,23 @@ const settingSchema = new mongoose.Schema({
 })
 
 settingSchema.post('save', async function(doc, next) {
-  const emitter = require('@/emitter')
-  emitter.emit('setting:updated', doc)
+  const { emitter, events } = require('@/emitter')
+  emitter.emit(events.SETTINGS_UPDATED, doc)
+  next()
 })
 
 const statics = {}
+
+/** 
+  * A function to create settings
+  *
+  * @param {ISettings} setting
+  * @returns {Promise.<Setting>}
+  */
+statics.build = async function(setting) {
+  const settings =  new Setting(setting)
+  return settings.save()
+}
 
 /**
  * @this {SettingModel}

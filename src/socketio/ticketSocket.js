@@ -11,22 +11,22 @@
  *  Updated:    1/20/19 4:43 PM
  *  Copyright (c) 2014-2019. All rights reserved.
  */
-var _ = require('lodash')
-var async = require('async')
-var winston = require('../logger')
-var marked = require('marked')
-var sanitizeHtml = require('sanitize-html')
-var utils = require('../helpers/utils')
-var emitter = require('../emitter')
-var socketEvents = require('./socketEventConsts')
-var ticketSchema = require('../models/ticket')
-var prioritySchema = require('../models/ticketpriority')
-var userSchema = require('../models/user')
-var roleSchema = require('../models/role')
-var permissions = require('../permissions')
-var xss = require('xss')
+const _ = require('lodash')
+const async = require('async')
+const winston = require('../logger')
+const marked = require('marked')
+const sanitizeHtml = require('sanitize-html')
+const utils = require('../helpers/utils')
+const { emitter } = require('../emitter')
+const socketEvents = require('./socketEventConsts')
+const ticketSchema = require('../models/ticket')
+const prioritySchema = require('../models/ticketpriority')
+const userSchema = require('../models/user')
+const roleSchema = require('../models/role')
+const permissions = require('../permissions')
+const xss = require('xss')
 
-var events = {}
+const events = {}
 
 function register (socket) {
   events.onUpdateTicketGrid(socket)

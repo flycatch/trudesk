@@ -55,7 +55,7 @@ api.delete = catchAsync(async (/** @type {FaqDeleteRequest} */req, res) => {
     logger.error(errors)
     return apiUtils.sendApiError(res, 400, errors)
   }
-  await Faq.deleteOne({ _id: id }).exec()
+  await Faq.deleteFaq(id)
   return apiUtils.sendApiSuccess(res)
 })
 

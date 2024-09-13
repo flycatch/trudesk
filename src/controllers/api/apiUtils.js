@@ -25,6 +25,9 @@ apiUtils.sendApiSuccess = function (res, object) {
 }
 
 apiUtils.sendApiError = function (res, errorNum, error) {
+  if (error instanceof Error) {
+    error = error.message
+  }
   return res.status(errorNum).json({ success: false, error })
 }
 apiUtils.sendApiError_InvalidPostData = function (res) {
@@ -100,7 +103,7 @@ apiUtils.catchAsync = function (handler, errHandler) {
                     return errHandler(err)
                 }
                 logger.warn(`failed ${req.path} - ${err}`)
-                return this.sendApiError(res, 500, err)
+                return apiUtils.sendApiError(res, 500, err)
             })
     }
 }

@@ -344,6 +344,11 @@ function rebuild (callback) {
       },
       function (next) {
         crawlTickets(next)
+      },
+      function (next) {
+        require('../services/elasticsearch/rebuild-index').main()
+          .then(() => next(null))
+          .catch(next)
       }
     ],
     function (err) {

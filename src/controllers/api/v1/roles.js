@@ -101,11 +101,11 @@ rolesV1.update = function (req, res) {
   if (_.isUndefined(_id) || _.isUndefined(data))
     return res.status(400).json({ success: false, error: 'Invalid Post Data' })
 
-  var emitter = require('../../../emitter')
-  var hierarchy = data.hierarchy ? data.hierarchy : false
-  var cleaned = _.omit(data, ['_id', 'hierarchy'])
-  var k = permissions.buildGrants(cleaned)
-  var roleSchema = require('../../../models/role')
+  const { emitter } = require('../../../emitter')
+  const hierarchy = data.hierarchy ? data.hierarchy : false
+  const cleaned = _.omit(data, ['_id', 'hierarchy'])
+  const k = permissions.buildGrants(cleaned)
+  const roleSchema = require('../../../models/role')
   roleSchema.get(data._id, function (err, role) {
     if (err) return res.status(400).json({ success: false, error: err })
     role.updateGrantsAndHierarchy(k, hierarchy, function (err) {
