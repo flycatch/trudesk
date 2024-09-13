@@ -40,7 +40,7 @@ const httpClient = axios.create()
 exponentialRetry(httpClient)
 
 emitter.on(events.SETTINGS_UPDATED, async ({ name, value }) => {
-  if (name !== SettingKeys.AI_HOST || name !== SettingKeys.AI_BASIC_TOKEN) {
+  if (name !== AI_HOST || name !== AI_BASIC_TOKEN) {
     return
   }
 
