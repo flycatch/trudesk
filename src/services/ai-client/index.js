@@ -2,6 +2,9 @@ const { default: axios } = require("axios")
 
 const logger = require('@/logger')
 const { exponentialRetry } = require("@/helpers/utils")
+const { emitter, events } = require("@/emitter")
+const { SettingKeys } = require("@/settings/settings-keys")
+const { Setting } = require("@/models")
 
 /**
 * @typedef {object} ClassifyRequest
@@ -22,30 +25,68 @@ const { exponentialRetry } = require("@/helpers/utils")
 * @property {Array.<number>} embedding
 * @property {number} dim
 *
+* @typedef {object} AIConfig
+* @prop {string} host
+* @prop {string} basicToken 
 */
 
 
 const AIClient = {}
 
+/** @type {AIConfig=} */
+AIClient.__config = undefined
+
 const httpClient = axios.create()
 exponentialRetry(httpClient)
 
+emitter.on(events.SETTINGS_UPDATED, async ({ name, value }) => {
+  if (name !== SettingKeys.AI_HOST || name !== SettingKeys.AI_BASIC_TOKEN) {
+    return
+  }
+
+  if (AIClient.__config === undefined) {
+    AIClient.__config = await getConfig()
+  }
+  switch (name) {
+    case SettingKeys.AI_HOST: AIClient.__config.host = value; break
+    case SettingKeys.AI_BASIC_TOKEN: AIClient.__config.basicToken = value; break
+    default: break
+  }
+})
+
+async function getConfig() {
+  if (AIClient.__config !== undefined) {
+    return AIClient.__config
+  }
+  const settings = await Setting.getSettingsObjectByName([
+    SettingKeys.AI_HOST,
+    SettingKeys.AI_BASIC_TOKEN
+  ])
+  AIClient.__config = {
+    host: settings.ai_host,
+    basicToken: settings.ai_basicToken,
+  }
+  return AIClient.__config
+}
+
 /** 
-*
-* @param {ClassifyRequest} data - The request body for classification
-* @param {string} host - The host of tagging API
-* @param {string} auth - The basic auth token
-* @returns {Promise.<ClassifyResponse>}
-*/
-AIClient.classify = async (data, host, auth) => {
+ * @param {ClassifyRequest} data - The request body for classification
+ * @returns {Promise.<ClassifyResponse>}
+ */
+AIClient.classify = async (data) => {
+    const config = await getConfig()
+    if (config.host === undefined || config.host.trim() === '') {
+      logger.warn("[ai] host not configured. Ignoring classification request")
+      throw new Error('AI host not configured')
+    }
     logger.info('requesting tagging API')
-    const url = new URL('/api/v2/classify', host).href
+    const url = new URL('/api/v2/classify', config.host).href
     const response = await axios.request({
         url,
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Basic ${auth}`
+            'Authorization': `Basic ${config.basicToken}`
         },
         data,
     })
@@ -66,19 +107,22 @@ AIClient.classify = async (data, host, auth) => {
 
 /** 
  * @param {EmbeddingsRequest} data
- * @param {string} host - The host of tagging API
- * @param {string} auth - The basic auth token
  * @returns {Promise.<EmbeddingsResponse>}
  */
-AIClient.embeddings = async (data, host, auth) => {
+AIClient.embeddings = async (data) => {
+    const config = await getConfig()
+    if (config.host === undefined || config.host.trim() === '') {
+      logger.warn('[ai] host not configured. Ignoring embeddings request')
+      throw new Error('AI host not configured')
+    }
     logger.debug('requesting for embeddings')
-    const url = new URL('/api/v2/embeddings', host).href
+    const url = new URL('/api/v2/embeddings', config.host).href
     const response = await axios.request({
         url,
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Basic ${auth}`
+            'Authorization': `Basic ${config.basicToken}`
         },
         data 
     })

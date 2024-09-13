@@ -23,25 +23,16 @@ const tagTicket = async (ticket) => {
   }
 
   const {
-    tagger_host,
     tagger_preferences,
-    tagger_basictoken,
     tagger_strategy = 'top-n',
     tagger_strategy_options = { count: 3 },
     tagging_inference_enable = false
   } = await Setting.getSettingsObjectByName([
-    'tagger:host',
     'tagger:preferences',
-    'tagger:basictoken',
     'tagger:strategy',
     'tagger:strategy:options',
     'tagger:inference:enable'
   ])
-
-  if (!tagger_host) {
-    logger.warn("[tagger] No tagger host configured. Ignoring classification request")
-    return undefined 
-  }
 
   /** @type {Array.<any>} */
   const tags = !!tagger_preferences
@@ -57,7 +48,7 @@ const tagTicket = async (ticket) => {
     text: `${ticket.subject}\n${ticket.issue}`,
     labels: tags.map(tag => tag.name),
     use_inference: tagging_inference_enable
-  }, tagger_host, tagger_basictoken)
+  })
 
   const classificationStrategy = ClassifierStrategyFactory.create(tagger_strategy)
   const { labels } = classificationStrategy.decide(response.labels, response.scores, tagger_strategy_options)

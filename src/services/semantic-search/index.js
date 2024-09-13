@@ -1,6 +1,5 @@
 const { Setting } = require("@/models")
 const logger = require('@/logger')
-const { TaggerClient } = require("@/services/autotagger/tagging-api-client")
 const { emitter, events } = require('@/emitter')
 const { ElasticSearch } = require("@/services/elasticsearch")
 const { sources } = require("@/services/semantic-search/sources")
@@ -21,8 +20,6 @@ const { AIClient } = require("@/services/ai-client")
  *
  * @typedef {object} SearchSettings
  * @property {boolean} enabled
- * @property {string} embeddingsHost
- * @property {string} embeddingsAuthToken
  * @property {boolean} initialized
  * @property {boolean} searchEnabled
  * @property {boolean} esEnabled
@@ -43,8 +40,6 @@ Search.__settings = undefined
 const keys = [
   'es:enable',
   'semanticsearch:enable',
-  'tagger:host',
-  'tagger:basicToken'
 ]
 
 async function getSettings() {
@@ -55,8 +50,6 @@ async function getSettings() {
   const settings = await Setting.getSettingsObjectByName(keys)
   Search.__settings = {
     enabled: (!!settings.es_enable) && (!!settings.semanticsearch_enable),
-    embeddingsHost: settings.tagger_host,
-    embeddingsAuthToken: settings.tagger_basicToken,
     searchEnabled: settings.semanticsearch_enable,
     esEnabled: settings.es_enable,
     initialized: false,
@@ -73,8 +66,6 @@ const onSettingsUpdate = async ( /** @type {import('@/models/setting').Setting} 
   switch (name) {
     case 'es:enable': settings.esEnabled = value; break
     case 'semanticsearch:enable': settings.searchEnabled = value; break
-    case 'tagger:host': settings.embeddingsHost = value; break
-    case 'tagger:basicToken': settings.embeddingsAuthToken = value; break
     default: break
   }
   settings.enabled = settings.esEnabled && settings.searchEnabled
@@ -152,7 +143,7 @@ Search.search = async (query, limit = 20) => {
   const response = await AIClient.embeddings({
     text: `${query}`,
     use_inference: false
-  }, settings.embeddingsHost, settings.embeddingsAuthToken)
+  })
 
   logger.debug(`Searching on search index for ${query}`)
   const client = await ElasticSearch.getClient()
@@ -210,7 +201,7 @@ Search.insert = async (source) => {
     const response = await AIClient.embeddings({
       text: `${source.document[source.embeddedField]}`,
       use_inference: false
-    }, settings.embeddingsHost, settings.embeddingsAuthToken)
+    })
 
     const id = source.document[source.idField]
 
@@ -259,7 +250,7 @@ Search.bulk = async (sources) => {
       const response = await AIClient.embeddings({
         text: `${source.document[source.embeddedField]}`,
         use_inference: false,
-      }, settings.embeddingsHost, settings.embeddingsAuthToken)
+      })
 
       const id = source.document[source.idField]
       bulk.push({ index: { _index: PublicQa.name, _id: id } })
@@ -306,7 +297,7 @@ Search.update = async (id, source) => {
     const response = await AIClient.embeddings({
       text: `${source.document[source.embeddedField]}`,
       use_inference: false
-    }, setting.embeddingsHost, setting.embeddingsAuthToken)
+    })
 
     logger.debug(`updating document ${source.type} of id ${id} to search index`)
 
