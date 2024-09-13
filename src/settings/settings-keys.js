@@ -6,7 +6,7 @@ module.exports = /** @type {const} */ ({
   SEMANTICSEARCH_ENABLE: 'semanticsearch:enable',
 
   AI_HOST: 'ai:host',
-  AI_BASIC_TOKEN: 'ai:port',
+  AI_BASIC_TOKEN: 'ai:basicToken',
 
   AUTOTAGGER_ENABLE:  'autotagger:enable',
   TAGGER_USE_INFERENCE: 'tagger:inference:enable',
