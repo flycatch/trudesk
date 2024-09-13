@@ -4,6 +4,7 @@ const Setting = require('@/models/setting')
 const Tag = require('@/models/tag')
 const { ClassifierStrategyFactory } = require('@/services/autotagger/strategies')
 const { AIClient } = require('@/services/ai-client')
+const { TAGGER_STRATEGY, TAGGER_PREFERENCES, TAGGER_STRATEGY_OPTIONS, TAGGER_USE_INFERENCE } = require('@/settings/settings-keys')
 
 /** 
  * Tags a ticket based on its title and description using the tagger API.
@@ -28,10 +29,10 @@ const tagTicket = async (ticket) => {
     tagger_strategy_options = { count: 3 },
     tagging_inference_enable = false
   } = await Setting.getSettingsObjectByName([
-    'tagger:preferences',
-    'tagger:strategy',
-    'tagger:strategy:options',
-    'tagger:inference:enable'
+    TAGGER_STRATEGY,
+    TAGGER_PREFERENCES,
+    TAGGER_STRATEGY_OPTIONS,
+    TAGGER_USE_INFERENCE
   ])
 
   /** @type {Array.<any>} */

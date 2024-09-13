@@ -6,6 +6,7 @@ const { Setting } = require('@/models')
 const { emitter, events } = require('@/emitter')
 const logger = require('@/logger')
 const { indices } = require('@/services/elasticsearch/indices')
+const { ES_HOST, ES_PORT } = require('@/settings/settings-keys')
 
 /** @type{es.Client=} */
 let client
@@ -210,7 +211,7 @@ ES.getClient = async function() {
   let URI = process.env.ELASTICSEARCH_URI
   if (URI === undefined || URI.trim() === '') {
     const settings = await Setting.getSettingsObjectByName(
-      ['es:host', 'es:port']
+      [ES_HOST, ES_PORT]
     )
     URI = `${settings.es_host}:${settings.es_port}`
   }

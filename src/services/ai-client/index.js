@@ -3,7 +3,7 @@ const { default: axios } = require("axios")
 const logger = require('@/logger')
 const { exponentialRetry } = require("@/helpers/utils")
 const { emitter, events } = require("@/emitter")
-const { SettingKeys } = require("@/settings/settings-keys")
+const { AI_HOST, AI_BASIC_TOKEN } = require("@/settings/settings-keys")
 const { Setting } = require("@/models")
 
 /**
@@ -48,8 +48,8 @@ emitter.on(events.SETTINGS_UPDATED, async ({ name, value }) => {
     AIClient.__config = await getConfig()
   }
   switch (name) {
-    case SettingKeys.AI_HOST: AIClient.__config.host = value; break
-    case SettingKeys.AI_BASIC_TOKEN: AIClient.__config.basicToken = value; break
+    case AI_HOST: AIClient.__config.host = value; break
+    case AI_BASIC_TOKEN: AIClient.__config.basicToken = value; break
     default: break
   }
 })
@@ -59,8 +59,8 @@ async function getConfig() {
     return AIClient.__config
   }
   const settings = await Setting.getSettingsObjectByName([
-    SettingKeys.AI_HOST,
-    SettingKeys.AI_BASIC_TOKEN
+    AI_HOST,
+    AI_BASIC_TOKEN
   ])
   AIClient.__config = {
     host: settings.ai_host,

@@ -5,6 +5,7 @@ const { ElasticSearch } = require("@/services/elasticsearch")
 const { sources } = require("@/services/semantic-search/sources")
 const { PublicQa } = require("@/services/elasticsearch/indices/public-qa")
 const { AIClient } = require("@/services/ai-client")
+const { ES_ENABLE, SEMANTICSEARCH_ENABLE } = require("@/settings/settings-keys")
 
 /**
  * @typedef {object} Source
@@ -37,17 +38,15 @@ const Search = {}
  */
 Search.__settings = undefined
 
-const keys = [
-  'es:enable',
-  'semanticsearch:enable',
-]
-
 async function getSettings() {
   if (Search.__settings) {
     return Search.__settings
   }
 
-  const settings = await Setting.getSettingsObjectByName(keys)
+  const settings = await Setting.getSettingsObjectByName([
+    ES_ENABLE,
+    SEMANTICSEARCH_ENABLE,
+  ])
   Search.__settings = {
     enabled: (!!settings.es_enable) && (!!settings.semanticsearch_enable),
     searchEnabled: settings.semanticsearch_enable,
@@ -58,14 +57,14 @@ async function getSettings() {
 }
 
 const onSettingsUpdate = async ( /** @type {import('@/models/setting').Setting} */{ name, value }) => {
-  if (!keys.includes(name)) {
+  if (name !== ES_ENABLE && name !== SEMANTICSEARCH_ENABLE) {
     return
   }
 
   const settings = await getSettings()
   switch (name) {
-    case 'es:enable': settings.esEnabled = value; break
-    case 'semanticsearch:enable': settings.searchEnabled = value; break
+    case ES_ENABLE: settings.esEnabled = value; break
+    case SEMANTICSEARCH_ENABLE: settings.searchEnabled = value; break
     default: break
   }
   settings.enabled = settings.esEnabled && settings.searchEnabled

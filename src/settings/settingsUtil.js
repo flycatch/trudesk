@@ -20,6 +20,7 @@ const ticketTypeSchema = require('../models/tickettype')
 const roleSchema = require('../models/role')
 const roleOrderSchema = require('../models/roleorder')
 const statusSchema = require('../models/ticketStatus')
+const { ES_ENABLE, ES_HOST, ES_PORT, AUTOTAGGER_ENABLE, TAGGER_USE_INFERENCE, AI_HOST, TAGGER_PREFERENCES, AI_BASIC_TOKEN, TAGGER_STRATEGY, TAGGER_STRATEGY_OPTIONS } = require('./settings-keys')
 
 const util = {}
 
@@ -103,9 +104,9 @@ util.getSettings = async callback => {
         s.showOverdueTickets = parseSetting(settings, 'showOverdueTickets:enable', true)
 
         // Elasticsearch
-        s.elasticSearchEnabled = parseSetting(settings, 'es:enable', false)
-        s.elasticSearchHost = parseSetting(settings, 'es:host', '')
-        s.elasticSearchPort = parseSetting(settings, 'es:port', 9200)
+        s.elasticSearchEnabled = parseSetting(settings, ES_ENABLE, false)
+        s.elasticSearchHost = parseSetting(settings, ES_HOST, '')
+        s.elasticSearchPort = parseSetting(settings, ES_PORT, 9200)
         s.elasticSearchConfigured = {
           value: s.elasticSearchEnabled.value === true && !_.isEmpty(s.elasticSearchHost.value)
         }
@@ -127,13 +128,15 @@ util.getSettings = async callback => {
         s.accountsPasswordComplexity = parseSetting(settings, 'accountsPasswordComplexity:enable', true)
 
         // Autotagger
-        s.autotagger = parseSetting(settings, 'autotagger:enable', false)
-        s.taggerInference = parseSetting(settings, 'tagger:inference:enable', false)
-        s.taggerHost = parseSetting(settings, 'tagger:host', '')
-        s.taggerPreferences = parseSetting(settings, 'tagger:preferences', '')
-        s.taggerBasictoken = parseSetting(settings, 'tagger:basictoken', '')
-        s.taggerStrategy = parseSetting(settings, 'tagger:strategy', 'top-n')
-        s.taggerStrategyOptions = parseSetting(settings, 'tagger:strategy:options', { count: 3})
+        s.autotagger = parseSetting(settings, AUTOTAGGER_ENABLE, false)
+        s.taggerInference = parseSetting(settings, TAGGER_USE_INFERENCE, false)
+        s.taggerPreferences = parseSetting(settings, TAGGER_PREFERENCES, '')
+        s.taggerStrategy = parseSetting(settings, TAGGER_STRATEGY, 'top-n')
+        s.taggerStrategyOptions = parseSetting(settings, TAGGER_STRATEGY_OPTIONS, { count: 3 })
+
+        // AI
+        s.taggerHost = parseSetting(settings, AI_HOST, '')
+        s.taggerBasictoken = parseSetting(settings, AI_BASIC_TOKEN, '')
 
         const types = await ticketTypeSchema.getTypes()
         content.data.ticketTypes = _.sortBy(types, o => o.name)

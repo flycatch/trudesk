@@ -1,6 +1,7 @@
 const logger = require("@/logger")
 const { Setting, Ticket } = require("@/models")
 const { tagTicket } = require("@/services/autotagger")
+const { AUTOTAGGER_ENABLE } = require("@/settings/settings-keys")
 
 /** @type {import('@/taskrunner').Task} */
 const AutotaggerJob = {}
@@ -8,7 +9,7 @@ const AutotaggerJob = {}
 AutotaggerJob.name = 'autotagger:job'
 
 AutotaggerJob.enable = async () => {
-  const enabled = (await Setting.getSettingByName('autotagger:enable'))
+  const enabled = (await Setting.getSettingByName(AUTOTAGGER_ENABLE))
   if (!enabled) {
     return false
   }
