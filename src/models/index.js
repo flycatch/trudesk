@@ -13,6 +13,7 @@ const Department = require('./department')
 const Message = require('./chat/message')
 const Conversation = require('./chat/conversation')
 const Faq = require('./faq')
+const Otp = require('./otp')
 
 module.exports = {
   User,
@@ -30,4 +31,5 @@ module.exports = {
   Conversation,
   Status,
   Faq,
+  Otp,
 }
