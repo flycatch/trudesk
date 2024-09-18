@@ -13,4 +13,6 @@ module.exports = /** @type {const} */ ({
   TAGGER_PREFERENCES: 'tagger:preferences',
   TAGGER_STRATEGY: 'tagger:strategy',
   TAGGER_STRATEGY_OPTIONS: 'tagger:strategy:options',
+
+  OTP_ENABLE: 'otp:enable',
 })
