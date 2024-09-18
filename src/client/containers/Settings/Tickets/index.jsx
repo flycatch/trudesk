@@ -295,7 +295,7 @@ class TicketsSettings extends React.Component {
           title={'Require OTP Verification'}
           subtitle={
             <div>
-              Send OTP to user’s registered email address before allowing to create a ticket.
+              Send OTP to verify customer's email before allowing to create a public ticket.
             </div>
           }
           component={
