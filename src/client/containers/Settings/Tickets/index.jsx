@@ -292,10 +292,10 @@ class TicketsSettings extends React.Component {
           }
         />
         <SettingItem
-          title={'OTP Verification'}
+          title={'Require OTP Verification'}
           subtitle={
             <div>
-              Enable OTP verification to confirm user email before creating a ticket.
+              Send OTP to user’s registered email address before allowing to create a ticket.
             </div>
           }
           component={
