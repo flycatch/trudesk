@@ -15,4 +15,16 @@ module.exports = /** @type {const} */ ({
   TAGGER_STRATEGY_OPTIONS: 'tagger:strategy:options',
 
   OTP_ENABLE: 'otp:enable',
+  OTP_LIMIT: 'otp:limit', // The no:of times a user can request for a otp resend. defaults to 3
+  OTP_EXPIRY: 'otp:expiry', // The expiry time of an otp. defaults to `600` seconds (10 minutes)
+  OTP_RANGE: 'otp:range', // The number range in which otp should be generated. defaults to { min: 100000, max: 999999 }
+  OTP_RETRY_AFTER: 'otp:retryAfter', // The time after which a user can retry again if he exausts his/her otp resend limit. defaults to 1 min
+
+
+  defaults: {
+    OTP_LIMIT: 3,
+    OTP_EXPIRY: 10 * 60, // 10 minutes
+    OTP_RANGE: { min: 100000, max: 999999 }, // 6 digit otp
+    OTP_RETRY_AFTER: 1 * 60 // 1 minutes
+  }
 })
