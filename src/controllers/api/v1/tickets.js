@@ -540,6 +540,9 @@ apiTickets.createPublicTicket = function (req, res) {
   if (!_.isObject(postData)) {
     return res.status(400).json({ success: false, error: 'Invalid Post Data' })
   }
+  if (postData.user?.email !== req.verifiedEmail) {
+    return res.status(400).json({ success: false, error: 'Unverified Email' })
+  }
   let plainTextPass
   let existingUser = false
 
