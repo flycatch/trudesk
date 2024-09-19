@@ -3,6 +3,8 @@ const { OtpService } = require('@/services/auth/otp')
 const { OtpError } = require('./errors')
 const apiUtils = require('@/controllers/api/apiUtils')
 const logger = require('@/logger')
+const { Setting } = require('@/models')
+const { OTP_ENABLE } = require('@/settings/settings-keys')
 
 const auth = {}
 
@@ -53,7 +55,12 @@ auth.createVerifiedSession = async (res, otp, email) => {
  * @param {MiddlewareOptions} options
  * @returns {import('express').RequestHandler} 
  */
-auth.verifiedEmail = (options) => (req, res, next) => {
+auth.verifiedEmail = (options) => async (req, res, next) => {
+  const enabled = await Setting.getSettingByName(OTP_ENABLE);
+  if (!enabled?.value) {
+    req.verified = { enabled: false, verified: false }
+    return next()
+  }
   const info = req.signedCookies[auth.__verifiedSessionKey]
   if (info == undefined || info === false) {
     if (options.verify) {
@@ -86,7 +93,11 @@ auth.verifiedEmail = (options) => (req, res, next) => {
     }
     return next()
   }
-  req.verifiedEmail = info.email
+  req.verified = {
+    enabled: enabled.value,
+    verified: options.verify,
+    email: info.email,
+  }
   next()
 }
 
