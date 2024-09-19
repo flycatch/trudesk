@@ -37,6 +37,39 @@ auth.createVerifiedSession = async (res, otp, email) => {
 }
 
 
+// TODO: move this to middleware.js ? 
+/**
+ * A middleware that checks if the request has the verified status.
+ *
+ * @type {import('express').RequestHandler} 
+ */
+auth.hasVerifiedEmailSession = async (req, res, next) => {
+  const info = req.signedCookies[auth.__verifiedSessionKey]
+  if (info == undefined || info === false) {
+    return apiUtils.sendApiError(
+      res.clearCookie(auth.__verifiedSessionKey),
+      403,
+      'Email not verified'
+    )
+  }
+  if (!info.email || !info.expiry) {
+    return apiUtils.sendApiError(
+      res.clearCookie(auth.__verifiedSessionKey),
+      500,
+      'Invalid request'
+    )
+  }
+  const expired = moment.utc().diff(moment(info.expiry), 'seconds', true) >= 0
+  if (expired) {
+    return apiUtils.sendApiError(
+      res.clearCookie(auth.__verifiedSessionKey),
+      403,
+      'Email not verified'
+    )
+  }
+  req.user = { email: info.email }
+  next()
+}
 
 
 module.exports = {

@@ -7,8 +7,8 @@
   */
 class OtpError extends Error {
   /**
-   * @param {string} message [TODO:parameter]
-   * @param {number} status [TODO:parameter]
+   * @param {string} message
+   * @param {number} status
    */
   constructor(message, status) {
     super(message)
