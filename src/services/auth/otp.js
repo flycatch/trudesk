@@ -41,7 +41,7 @@ const getSettings = async () => {
     logger.warn(`Invalid otp config configured. Errors: ${errors}. Using default settings`)
     return DEFAULT_SETTINGS
   }
-  return setting 
+  return setting
 }
 
 /**
@@ -71,6 +71,24 @@ OtpService.generateOtp = async (email) => {
   emailOtp.email = email
   emailOtp.expiry = moment.utc().add(settings.otp_expiry, 'seconds').toDate()
   return emailOtp.save()
+}
+
+/**
+ *
+ * Verifies if the provided otp is not expired and the 
+ * provided otp is assosiated with the given email
+ *
+ * @param {string} email - the email to confirm
+ * @param {string} password - the otp send to the email
+ * @returns {Promise.<boolean>}
+ */
+OtpService.verifyOtp = async (email, password) => {
+  const otp = await Otp.findByEmail(email)
+  if (!otp) {
+    return false
+  }
+  return otp.password === password
+    && moment.utc().diff(otp.expiry, 'seconds', true) >= 0 // expiry check
 }
 
 module.exports = {
