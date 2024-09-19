@@ -25,6 +25,6 @@ module.exports = /** @type {const} */ ({
     OTP_LIMIT: 3,
     OTP_EXPIRY: 10 * 60, // 10 minutes
     OTP_RANGE: { min: 100000, max: 999999 }, // 6 digit otp
-    OTP_RETRY_AFTER: 1 * 60 // 1 minutes
+    OTP_RETRY_AFTER: 5 * 60 // 5 minutes
   }
 })
