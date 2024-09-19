@@ -25,7 +25,7 @@ auth.createVerifiedSession = async (res, otp, email) => {
   }
   await OtpService.deleteOtp(email)
 
-  const expiry = moment.utc().add(auth.__verifiedSessionKey, 'seconds').toJSON()
+  const expiry = moment.utc().add(auth.__tempSessionMaxAge, 'seconds').toJSON()
 
   logger.debug(`A verified session has been created for ${email}`)
   return res.cookie(auth.__verifiedSessionKey, { email, expiry }, {
