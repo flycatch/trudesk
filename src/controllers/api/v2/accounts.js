@@ -29,6 +29,7 @@ const { OtpService } = require('@/services/auth/otp')
 const mailer = require('@/mailer')
 const logger = require('@/logger')
 const { defaults } = require('@/settings/settings-keys')
+const { auth } = require('@/services/auth')
 
 const accountsApi = {}
 
@@ -528,7 +529,7 @@ accountsApi.verifyEmail = apiUtils.catchAsync(async (req, res) => {
   mailer.sendTemplatedMail({
     to: body.email,
     template: 'email-verify-otp',
-    templateProps: { password: otp.password, expiresIn: `${defaults.OTP_EXPIRY / 60} minutes`  }
+    templateProps: { password: otp.password, expiresIn: `${defaults.OTP_EXPIRY / 60} minutes` }
   }).catch(err => logger.error('Failed to send email verification mail', err))
   return apiUtils.sendApiSuccess(res, { message: "Otp succesfully send to email" })
 })
@@ -537,15 +538,17 @@ accountsApi.verifyEmail = apiUtils.catchAsync(async (req, res) => {
  * @type {import('express').RequestHandler<any, any, { email: string, otp: string }>}
  */
 accountsApi.verifyPublicEmailOtp = apiUtils.catchAsync(async (req, res) => {
+  try {
     const [body, errors] = validate(VerifyOtpSchema, req.body)
     if (errors) {
-        return apiUtils.sendApiError(res, 400, errors)
+      return apiUtils.sendApiError(res, 400, errors)
     }
-    if (!await OtpService.verifyOtp(body.email, body.otp)) {
-        return apiUtils.sendApiError(res, 403, 'Invalid OTP')
-    }
-    await OtpService.deleteOtp(body.email)
-    return apiUtils.sendApiSuccess(res, { message: "Otp Verified" })
+    const response = await auth.createVerifiedSession(res, body.otp, body.email)
+    return apiUtils.sendApiSuccess(response, { message: "Otp Verified" })
+  } catch (err) {
+    logger.warn(`Something unexpected occured when creating a verfied session. Error: ${err}`)
+    return apiUtils.sendApiError(res.clearCookie(auth.__verifiedSessionKey), err.status ?? 500, err)
+  }
 })
 
 
