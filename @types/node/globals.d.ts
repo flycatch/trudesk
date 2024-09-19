@@ -8,4 +8,10 @@ declare global {
 
     var esStatus: string;
     var esRebuilding: boolean;
+
+    namespace Express {
+        export interface Request {
+            verifiedEmail: string | undefined
+        }
+    }
 }

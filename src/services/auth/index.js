@@ -42,7 +42,7 @@ auth.createVerifiedSession = async (res, otp, email) => {
  *   - whether or not to verify the session cookie.
  *   The session is not verified if its tampered with, expired or missing.
  *   If set to false, session will not be verified, and if a valid session is
- *   present the decoded email is passed to the next handler as req.user object.
+ *   present the decoded email is passed to the next handler as req.verifiedEmail field.
  *   Otherwise, invalid session, will return an http error.
  */
 
@@ -86,7 +86,7 @@ auth.verifiedEmail = (options) => (req, res, next) => {
     }
     return next()
   }
-  req.user = { email: info.email }
+  req.verifiedEmail = info.email
   next()
 }
 
