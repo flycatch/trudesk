@@ -1,0 +1,7 @@
+{
+  "name": "email-verify-otp",
+  "displayName": "Email Verified",
+  "description": "Email notification sent when a public customer email is to be verified.",
+  "subject": "[trudesk] Email Verification",
+  "data": { }
+}

@@ -608,7 +608,8 @@ function addedDefaultPrioritiesToTicketTypes (callback) {
 
 function mailTemplates (callback) {
   const newTicket = require('./json/mailer-new-ticket')
-  const passwordReset = require('./json/mailer-password-reset')
+  const passwordReset = require('./json/mailer-password-reset.json')
+  const emailVerifyOtp = require('./json/mailer-email-verify-otp.json')
   const publicAccountCreated = require('./json/mailer-public-account-created.json')
   const templateSchema = require('../models/template')
   async.parallel(
@@ -638,6 +639,16 @@ function mailTemplates (callback) {
           if (err) return done(err)
           if (!templates || templates.length < 1) {
             return templateSchema.create(publicAccountCreated, done)
+          }
+
+          return done()
+        })
+      },
+      function(done) {
+        templateSchema.findOne({ name: emailVerifyOtp.name }, function(err, templates) {
+          if (err) return done(err)
+          if (!templates || templates.length < 1) {
+            return templateSchema.create(emailVerifyOtp, done)
           }
 
           return done()

@@ -1,0 +1,49 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Email Verification</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            margin-top: 0px;
+            margin-right: 0px;
+            margin-bottom: 0px;
+            margin-left: 0px;
+        }
+
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+            margin-bottom: 2px;
+        }
+
+        hr {
+            display: block;
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            background: #ccc;
+            height: 3px;
+            border: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div>
+        <p>Hi there,</p>
+        <p>Your otp is {{password}}</p>
+        <p>The otp will expire in {{expiresIn}}</p>
+    </div>
+</body>
+
+</html>
