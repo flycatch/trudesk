@@ -12,94 +12,173 @@
  *  Copyright (c) 2014-2019. All rights reserved.
  */
 
-var _ = require('lodash')
-var nodeMailer = require('nodemailer')
+const nodeMailer = require('nodemailer')
+const Email = require('email-templates')
 
-var settings = require('../models/setting')
+const { resolve } = require('path')
+const Setting = require('../models/setting')
+const {
+  MAILER_ENABLE,
+  MAILER_HOST,
+  MAILER_SSL,
+  MAILER_PORT,
+  MAILER_USERNAME,
+  MAILER_PASSWORD,
+  MAILER_FROM,
+} = require('@/settings/settings-keys')
+const logger = require('@/logger')
+const { emitter, events } = require('@/emitter')
 
-var mailer = {}
+/**
+ * @typedef {object} TemplatedMail
+ * @prop {string} template
+ * @prop {any} templateProps
+ * @prop {string} to
+ * @prop {string} subject
+ *
+ * @typedef {object} Mail
+ * @prop {string} to
+ * @prop {string} subject
+ * @prop {string} body
+ *
+ * @typedef {object} MailerSettings
+ * @prop {boolean} enabled
+ * @prop {boolean} from
+ * @prop {import('nodemailer').Transporter=} transport
+ */
+const mailer = {}
 
-mailer.sendMail = function (data, callback) {
-  createTransporter(function (err, mailSettings) {
-    if (err) return callback(err)
-    if (!mailSettings || !mailSettings.enabled) {
-      // Mail Disabled
-      return callback(null, 'Mail Disabled')
+/** @type {MailerSettings=} */
+mailer.__settings = undefined
+mailer.__renderer = new Email({
+  views: {
+    root: resolve(__dirname, 'templates'),
+    options: {
+      extension: 'handlebars'
     }
+  }
+})
 
-    if (!mailSettings.from) return callback('No From Address Set.')
+/** @type {Array.<string>} */
+const KEYS = [
+  MAILER_ENABLE,
+  MAILER_HOST,
+  MAILER_SSL,
+  MAILER_PORT,
+  MAILER_USERNAME,
+  MAILER_PASSWORD,
+  MAILER_FROM,
+]
 
-    data.from = mailSettings.from.value
+emitter.on(events.SETTINGS_UPDATED, (/** @type {import('@/models/setting').Setting} */ setting) => {
+  if (!KEYS.includes(setting.name)) {
+    return
+  }
+  mailer.__settings = undefined
+})
 
-    if (!data.from) return callback('No From Address Set.')
 
-    mailSettings.transporter.sendMail(data, callback)
-  })
+/** 
+ * Returns config for mailer
+ * @returns {Promise.<MailerSettings>}
+ */
+async function getConfig() {
+  if (mailer.__settings !== undefined) {
+    return mailer.__settings
+  }
+  const settings = await Setting.getSettingsObjectByName(KEYS)
+
+  /** @type {import('nodemailer/lib/smtp-transport').Options} */
+  const transport = {
+    host: settings.mailer_host ?? '127.0.0.1',
+    port: settings.mailer_port ?? 25,
+    secure: settings.mailer_ssl ?? false,
+    tls: {
+      rejectUnauthorized: false
+    },
+    from: settings.mailer_from
+  }
+
+  if (settings.mailer_username && settings.mailer_password) {
+    transport.auth = {
+      user: settings.mailer_username,
+      pass: settings.mailer_password ?? '',
+    }
+  }
+
+  mailer.__settings = {
+    enabled: settings.mailer_enable,
+    from: settings.mailer_from,
+    transport: nodeMailer.createTransport(transport)
+  }
+  return mailer.__settings
 }
 
-mailer.verify = function (callback) {
-  createTransporter(function (err, mailSettings) {
-    if (err) return callback(err)
+/**
+ * Sends email with templates defined in src/mailer/templates
+ *
+ * @param {TemplatedMail} mail
+ * @returns {Promise.<void>}
+ */
+mailer.sendTemplatedMail = async (mail) => {
+  const settings = await getConfig()
+  if (!settings.enabled) {
+    return
+  }
 
-    if (!mailSettings.enabled) return callback({ code: 'Mail Disabled' })
+  const html = await mailer.__renderer.render(mail.template, mail.templateProps)
+  return new Promise((res, rej) => settings.transport?.sendMail(
+    { to: mail.to, subject: mail.subject, html },
+    (err, info) => {
+      logger.debug(`email to ${mail.to} info : ${JSON.stringify(info)}`)
+      if (err) {
+        logger.error('Failed to send email', err)
+        return rej(err)
+      }
+      return res()
+    }
+  ))
+}
 
-    mailSettings.transporter.verify(function (err) {
-      if (err) return callback(err)
+/** 
+  * Sends an email.
+  *
+  * @param {import('nodemailer').SendMailOptions} data
+  * @param {function(any=): void} callback
+  */
+mailer.sendMail = function(data, callback) {
+  getConfig().then(config => {
+    if (!config.enabled) {
+      // Mail Disabled
+      return callback('Mail Disabled')
+    }
+    if (!config.from) {
+      return callback('No From Address Set.')
+    }
+    config.transport?.sendMail(data, callback)
+  }).catch(err => callback(err))
 
+}
+
+/** 
+  * Tests if the email server is reachable
+  *
+  * @param {function(any=): void} callback
+  */
+mailer.verify = function(callback) {
+  getConfig().then(config => {
+    if (!config.enabled) {
+      return callback({ code: 'Mail Disabled' })
+    }
+    config.transport?.verify(function(err) {
+      if (err) {
+        return callback(err)
+      }
       return callback()
     })
-  })
+
+  }).catch(callback)
 }
 
-function createTransporter (callback) {
-  settings.getSettings(function (err, s) {
-    if (err) return callback(err)
-
-    var mailSettings = {}
-    mailSettings.enabled = _.find(s, function (x) {
-      return x.name === 'mailer:enable'
-    })
-    mailSettings.host = _.find(s, function (x) {
-      return x.name === 'mailer:host'
-    })
-    mailSettings.ssl = _.find(s, function (x) {
-      return x.name === 'mailer:ssl'
-    })
-    mailSettings.port = _.find(s, function (x) {
-      return x.name === 'mailer:port'
-    })
-    mailSettings.username = _.find(s, function (x) {
-      return x.name === 'mailer:username'
-    })
-    mailSettings.password = _.find(s, function (x) {
-      return x.name === 'mailer:password'
-    })
-    mailSettings.from = _.find(s, function (x) {
-      return x.name === 'mailer:from'
-    })
-
-    mailSettings.enabled = mailSettings.enabled && mailSettings.enabled.value ? mailSettings.enabled.value : false
-
-    var transport = {
-      host: mailSettings.host && mailSettings.host.value ? mailSettings.host.value : '127.0.0.1',
-      port: mailSettings.port && mailSettings.port.value ? mailSettings.port.value : 25,
-      secure: mailSettings.ssl && mailSettings.ssl.value ? mailSettings.ssl.value : false,
-      tls: {
-        rejectUnauthorized: false
-      }
-    }
-    if (mailSettings.username && mailSettings.username.value) {
-      transport.auth = {
-        user: mailSettings.username.value,
-        pass: mailSettings.password && mailSettings.password.value ? mailSettings.password.value : ''
-      }
-    }
-
-    mailSettings.transporter = nodeMailer.createTransport(transport)
-    mailer.transporter = mailSettings.transporter
-
-    return callback(null, mailSettings)
-  })
-}
 
 module.exports = mailer

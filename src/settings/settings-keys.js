@@ -3,6 +3,14 @@ module.exports = /** @type {const} */ ({
   ES_HOST: 'es:host',
   ES_PORT: 'es:port',
 
+  MAILER_ENABLE: 'mailer:enable',
+  MAILER_HOST: 'mailer:host',
+  MAILER_SSL: 'mailer:ssl',
+  MAILER_PORT: 'mailer:port',
+  MAILER_USERNAME: 'mailer:username',
+  MAILER_PASSWORD: 'mailer:password',
+  MAILER_FROM: 'mailer:from',
+
   SEMANTICSEARCH_ENABLE: 'semanticsearch:enable',
 
   AI_HOST: 'ai:host',
