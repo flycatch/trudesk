@@ -39,10 +39,11 @@ module.exports = function (middleware, router, controllers) {
   router.post('/api/v2/accounts/profile/update-password', apiv2Auth, csrfCheck, apiv2.accounts.updatePassword)
   router.put('/api/v2/accounts/:username', apiv2Auth, canUser('accounts:update'), apiv2.accounts.update)
 
-  /** @type {typeof import('./accounts')} */
-  const accountsApi = apiv2.accounts
-  router.post('/api/v2/public/accounts/verify-email', accountsApi.verifyEmail)
-  router.post('/api/v2/public/accounts/verify-otp', accountsApi.verifyPublicEmailOtp)
+  // public emails
+  /** @type {typeof import('./public-email')} */
+  const publicEmailApi = apiv2.publicEmail
+  router.post('/api/v2/public-email/otp', publicEmailApi.sendOtp)
+  router.post('/api/v2/public-email/verify', publicEmailApi.verifyEmail)
 
   // Ticket Info
   router.get('/api/v2/tickets/info/types', apiv2Auth, apiv2.tickets.info.types)
