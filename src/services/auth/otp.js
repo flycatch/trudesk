@@ -52,16 +52,14 @@ const getSettings = async () => {
   * @returns {Promise.<import('@/models/otp').Otp>}
   */
 OtpService.generateOtp = async (email) => {
-  let existingOtp = true
   let emailOtp = await Otp.findByEmail(email)
   if (!emailOtp) {
-    existingOtp = false
     emailOtp = new Otp({ email })
   }
 
   const settings = await getSettings()
 
-  if (!existingOtp && emailOtp.retries >= settings.otp_limit) {
+  if (emailOtp.retries >= settings.otp_limit) {
     if (moment.utc().diff(emailOtp.updatedAt, 'seconds') < settings.otp_retryAfter) {
       throw new OtpError(`Too many otps requested. Retry after ${settings.otp_retryAfter / 60} minutes`, 429)
     }
@@ -69,7 +67,7 @@ OtpService.generateOtp = async (email) => {
   }
 
   emailOtp.password = `${generateSecureRandomNumber(settings.otp_range)}`
-  emailOtp.retries = existingOtp ? emailOtp.retries + 1 : 0
+  emailOtp.retries = emailOtp.retries != undefined ? emailOtp.retries + 1 : 0
   emailOtp.email = email
   emailOtp.expiry = moment.utc().add(settings.otp_expiry, 'seconds').toDate()
   return emailOtp.save()
