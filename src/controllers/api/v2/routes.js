@@ -42,7 +42,7 @@ module.exports = function (middleware, router, controllers) {
   /** @type {typeof import('./accounts')} */
   const accountsApi = apiv2.accounts
   router.post('/api/v2/public/accounts/verify-email', accountsApi.verifyEmail)
-  router.post('/api/v2/public/accounts/verify-otp', accountsApi.verifyEmailOtp)
+  router.post('/api/v2/public/accounts/verify-otp', accountsApi.verifyPublicEmailOtp)
 
   // Ticket Info
   router.get('/api/v2/tickets/info/types', apiv2Auth, apiv2.tickets.info.types)

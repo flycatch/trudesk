@@ -536,7 +536,7 @@ accountsApi.verifyEmail = apiUtils.catchAsync(async (req, res) => {
 /**
  * @type {import('express').RequestHandler<any, any, { email: string, otp: string }>}
  */
-accountsApi.verifyEmailOtp = apiUtils.catchAsync(async (req, res) => {
+accountsApi.verifyPublicEmailOtp = apiUtils.catchAsync(async (req, res) => {
     const [body, errors] = validate(VerifyOtpSchema, req.body)
     if (errors) {
         return apiUtils.sendApiError(res, 400, errors)
