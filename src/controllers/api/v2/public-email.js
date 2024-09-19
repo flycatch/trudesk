@@ -4,13 +4,18 @@ const apiUtils = require('../apiUtils')
 const { OtpService } = require('@/services/auth/otp')
 const mailer = require('@/mailer')
 const logger = require('@/logger')
-const { defaults } = require('@/settings/settings-keys')
+const { defaults, OTP_ENABLE } = require('@/settings/settings-keys')
 const { auth } = require('@/services/auth')
+const { Setting } = require('@/models')
 
 const publicEmailApi = {}
 
 /** Sends OTP to an email */
 publicEmailApi.sendOtp = apiUtils.catchAsync(async (req, res) => {
+  const enabled = await Setting.getSettingByName(OTP_ENABLE)
+  if (!enabled?.value) {
+    return apiUtils.sendApiSuccess(res, { verified: true })
+  }
   const [body, errors] = validate(VerifyEmailSchema, req.body)
   if (errors) {
     return apiUtils.sendApiError(res, 400, errors)
