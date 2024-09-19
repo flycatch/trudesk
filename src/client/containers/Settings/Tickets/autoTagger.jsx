@@ -30,7 +30,7 @@ class AutoTagger extends React.Component {
     if (nextProps.settings) {
       let stateObj = { ...state };
       if (!state.host) stateObj.host = nextProps.settings.getIn(['settings', 'taggerHost', 'value']) || '';
-      if (!state.userName || !state.password){
+      if (!state.userName && !state.password){
         const basicToken = nextProps.settings.getIn(['settings', 'taggerBasictoken', 'value']) || ''; 
         const [userName, password] = window.atob(basicToken).split(':');
         stateObj.userName = userName || '';
@@ -77,9 +77,9 @@ class AutoTagger extends React.Component {
     e.preventDefault();
 
     const autoTagSettings = [
-      { name: 'tagger:host', value: this.state.host },
+      { name: 'ai:host', value: this.state.host },
       {
-        name: 'tagger:basictoken',
+        name: 'ai:basicToken',
         value: window.btoa(`${this.state.userName}:${this.state.password}`),
       },
     ];
