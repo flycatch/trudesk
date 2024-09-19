@@ -52,6 +52,8 @@ const getSettings = async () => {
   * @returns {Promise.<import('@/models/otp').Otp>}
   */
 OtpService.generateOtp = async (email) => {
+  logger.debug(`Generating otp for ${email}`)
+
   let emailOtp = await Otp.findByEmail(email)
   if (!emailOtp) {
     emailOtp = new Otp({ email })
@@ -83,12 +85,24 @@ OtpService.generateOtp = async (email) => {
  * @returns {Promise.<boolean>}
  */
 OtpService.verifyOtp = async (email, password) => {
+  logger.debug(`verifying otp for ${email}`)
   const otp = await Otp.findByEmail(email)
   if (!otp) {
     return false
   }
   return otp.password === password
     && moment.utc().diff(otp.expiry, 'seconds', true) >= 0 // expiry check
+}
+
+/**
+  * Deletes Otp by email.
+  *
+  * @param {string} email
+  * @returns {Promise.<void>}
+  */
+OtpService.deleteOtp = async (email) => {
+  logger.debug(`deleting otp for ${email}`)
+  await Otp.deleteByEmail(email)
 }
 
 module.exports = {

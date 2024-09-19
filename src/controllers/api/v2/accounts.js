@@ -544,6 +544,7 @@ accountsApi.verifyEmailOtp = apiUtils.catchAsync(async (req, res) => {
     if (!await OtpService.verifyOtp(body.email, body.otp)) {
         return apiUtils.sendApiError(res, 403, 'Invalid OTP')
     }
+    await OtpService.deleteOtp(body.email)
     return apiUtils.sendApiSuccess(res, { message: "Otp Verified" })
 })
 
