@@ -58,7 +58,7 @@ auth.createVerifiedSession = async (res, otp, email) => {
 auth.verifiedEmail = (options) => async (req, res, next) => {
   const enabled = await Setting.getSettingByName(OTP_ENABLE);
   if (!enabled?.value) {
-    req.verified = { enabled: false, verified: false }
+    req.verifiedEmailSession = { enabled: false, verified: false }
     return next()
   }
   const info = req.signedCookies[auth.__verifiedSessionKey]
@@ -93,7 +93,7 @@ auth.verifiedEmail = (options) => async (req, res, next) => {
     }
     return next()
   }
-  req.verified = {
+  req.verifiedEmailSession = {
     enabled: enabled.value,
     verified: options.verify,
     email: info.email,

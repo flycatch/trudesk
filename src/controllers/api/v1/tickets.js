@@ -543,7 +543,7 @@ apiTickets.createPublicTicket = function (req, res) {
   if (!_.isObject(postData)) {
     return res.status(400).json({ success: false, error: 'Invalid Post Data' })
   }
-  if (req.verified?.enabled && postData.user?.email !== req.verified?.email) {
+  if (req.verifiedEmailSession?.enabled && postData.user?.email !== req.verifiedEmailSession?.email) {
     return res.status(400).json({ success: false, error: 'Unverified Email' })
   }
   let plainTextPass
