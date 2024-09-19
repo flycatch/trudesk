@@ -53,7 +53,7 @@ auth.createVerifiedSession = async (res, otp, email) => {
  * @param {MiddlewareOptions} options
  * @returns {import('express').RequestHandler} 
  */
-auth.hasVerifiedEmailSession = (options) => (req, res, next) => {
+auth.verifiedEmail = (options) => (req, res, next) => {
   const info = req.signedCookies[auth.__verifiedSessionKey]
   if (info == undefined || info === false) {
     if (options.verify) {
