@@ -23,7 +23,7 @@ const Team = require('../../../models/team')
 const Department = require('../../../models/department')
 const passwordComplexity = require('../../../settings/passwordComplexity')
 const { validate } = require('@/validators')
-const { VerifyEmailSchema } = require('@/validators/accounts')
+const { VerifyEmailSchema, VerifyOtpSchema } = require('@/validators/accounts')
 const apiUtils = require('../apiUtils')
 const { OtpService } = require('@/services/auth/otp')
 const mailer = require('@/mailer')
@@ -531,6 +531,20 @@ accountsApi.verifyEmail = apiUtils.catchAsync(async (req, res) => {
     templateProps: { password: otp.password, expiresIn: `${defaults.OTP_EXPIRY / 60} minutes`  }
   }).catch(err => logger.error('Failed to send email verification mail', err))
   return apiUtils.sendApiSuccess(res, { message: "Otp succesfully send to email" })
+})
+
+/**
+ * @type {import('express').RequestHandler<any, any, { email: string, otp: string }>}
+ */
+accountsApi.verifyEmailOtp = apiUtils.catchAsync(async (req, res) => {
+    const [body, errors] = validate(VerifyOtpSchema, req.body)
+    if (errors) {
+        return apiUtils.sendApiError(res, 400, errors)
+    }
+    if (!await OtpService.verifyOtp(body.email, body.otp)) {
+        return apiUtils.sendApiError(res, 403, 'Invalid OTP')
+    }
+    return apiUtils.sendApiSuccess(res, { message: "Otp Verified" })
 })
 
 
