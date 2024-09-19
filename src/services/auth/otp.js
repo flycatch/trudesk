@@ -91,7 +91,7 @@ OtpService.verifyOtp = async (email, password) => {
     return false
   }
   return otp.password === password
-    && moment.utc().diff(otp.expiry, 'seconds', true) >= 0 // expiry check
+    && moment.utc().diff(otp.expiry, 'seconds', true) < 0 // expiry check
 }
 
 /**
