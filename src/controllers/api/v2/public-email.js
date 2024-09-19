@@ -4,21 +4,20 @@ const apiUtils = require('../apiUtils')
 const { OtpService } = require('@/services/auth/otp')
 const mailer = require('@/mailer')
 const logger = require('@/logger')
-const { defaults, OTP_ENABLE } = require('@/settings/settings-keys')
+const { defaults } = require('@/settings/settings-keys')
 const { auth } = require('@/services/auth')
-const { Setting } = require('@/models')
 
 const publicEmailApi = {}
 
 /** Sends OTP to an email */
 publicEmailApi.sendOtp = apiUtils.catchAsync(async (req, res) => {
-  const enabled = await Setting.getSettingByName(OTP_ENABLE)
-  if (!enabled?.value) {
-    return apiUtils.sendApiSuccess(res, { verified: true })
-  }
   const [body, errors] = validate(VerifyEmailSchema, req.body)
   if (errors) {
     return apiUtils.sendApiError(res, 400, errors)
+  }
+  if (!req.verifiedEmailSession?.enabled 
+    || req.verifiedEmailSession?.verified && req.verifiedEmailSession.email === body.email) {
+    return apiUtils.sendApiSuccess(res, { message: "Already verfied", verified: true })
   }
   const otp = await OtpService.generateOtp(body.email)
   mailer.sendTemplatedMail({
@@ -35,6 +34,9 @@ publicEmailApi.verifyEmail = apiUtils.catchAsync(async (req, res) => {
     const [body, errors] = validate(VerifyOtpSchema, req.body)
     if (errors) {
       return apiUtils.sendApiError(res, 400, errors)
+    }
+    if (req.verifiedEmailSession?.verified && req.verifiedEmailSession?.email === body.email) {
+      return apiUtils.sendApiSuccess(res, { message: "Already verfied", verified: true })
     }
     const response = await auth.createVerifiedSession(res, body.otp, body.email)
     return apiUtils.sendApiSuccess(response, { message: "Otp Verified", verified: true })
