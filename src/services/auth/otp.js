@@ -63,7 +63,7 @@ OtpService.generateOtp = async (email) => {
     if (moment.utc().diff(emailOtp.updatedAt, 'seconds') < settings.otp_retryAfter) {
       throw new OtpError(`Too many otps requested. Retry after ${settings.otp_retryAfter / 60} minutes`, 429)
     }
-    emailOtp.retries = -1
+    emailOtp.retries = 0
   }
 
   emailOtp.password = `${generateSecureRandomNumber(settings.otp_range)}`

@@ -35,7 +35,7 @@ const { Template } = require('@/models')
  * @prop {string} template
  * @prop {any} templateProps
  * @prop {string} to
- * @prop {string} subject
+ * @prop {string=} subject
  *
  * @typedef {object} Mail
  * @prop {string} to
