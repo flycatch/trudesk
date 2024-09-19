@@ -36,41 +36,59 @@ auth.createVerifiedSession = async (res, otp, email) => {
   })
 }
 
+/**
+ * @typedef {object} MiddlewareOptions
+ * @prop {boolean} verify 
+ *   - whether or not to verify the session cookie.
+ *   The session is not verified if its tampered with, expired or missing.
+ *   If set to false, session will not be verified, and if a valid session is
+ *   present the decoded email is passed to the next handler as req.user object.
+ *   Otherwise, invalid session, will return an http error.
+ */
 
 // TODO: move this to middleware.js ? 
 /**
  * A middleware that checks if the request has the verified status.
  *
- * @type {import('express').RequestHandler} 
+ * @param {MiddlewareOptions} options
+ * @returns {import('express').RequestHandler} 
  */
-auth.hasVerifiedEmailSession = async (req, res, next) => {
+auth.hasVerifiedEmailSession = (options) => (req, res, next) => {
   const info = req.signedCookies[auth.__verifiedSessionKey]
   if (info == undefined || info === false) {
-    return apiUtils.sendApiError(
-      res.clearCookie(auth.__verifiedSessionKey),
-      403,
-      'Email not verified'
-    )
+    if (options.verify) {
+      return apiUtils.sendApiError(
+        res.clearCookie(auth.__verifiedSessionKey),
+        403,
+        'Email not verified'
+      )
+    }
+    return next()
   }
   if (!info.email || !info.expiry) {
-    return apiUtils.sendApiError(
-      res.clearCookie(auth.__verifiedSessionKey),
-      500,
-      'Invalid request'
-    )
+    if (options.verify) {
+      return apiUtils.sendApiError(
+        res.clearCookie(auth.__verifiedSessionKey),
+        500,
+        'Invalid request'
+      )
+    }
+    return next()
   }
   const expired = moment.utc().diff(moment(info.expiry), 'seconds', true) >= 0
   if (expired) {
-    return apiUtils.sendApiError(
-      res.clearCookie(auth.__verifiedSessionKey),
-      403,
-      'Email not verified'
-    )
+    if (options.verify) {
+      return apiUtils.sendApiError(
+        res.clearCookie(auth.__verifiedSessionKey),
+        403,
+        'Email not verified'
+      )
+    }
+    return next()
   }
   req.user = { email: info.email }
   next()
 }
-
 
 module.exports = {
   auth
