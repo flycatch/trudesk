@@ -28,6 +28,7 @@ const {
 } = require('@/settings/settings-keys')
 const logger = require('@/logger')
 const { emitter, events } = require('@/emitter')
+const { Template } = require('@/models')
 
 /**
  * @typedef {object} TemplatedMail
@@ -125,10 +126,24 @@ mailer.sendTemplatedMail = async (mail) => {
   if (!settings.enabled) {
     return
   }
+  /** @type {import('nodemailer').SendMailOptions} */
+  const data = {
+    to: mail.to
+  }
+  const template = await Template.get(mail.template)
+  data.subject = global.Handlebars.compile(
+    template != undefined && template.subject.trim() != ''
+      ? template.subject
+      : mail.subject
+  )(mail.templateProps)
 
-  const html = await mailer.__renderer.render(mail.template, mail.templateProps)
+  data.html = await mailer.__renderer.render(mail.template,
+    template != undefined
+      ? { ...template.data, ...mail.templateProps }
+      : mail.templateProps
+  )
   return new Promise((res, rej) => settings.transport?.sendMail(
-    { to: mail.to, subject: mail.subject, html },
+    data,
     (err, info) => {
       logger.debug(`email to ${mail.to} info : ${JSON.stringify(info)}`)
       if (err) {

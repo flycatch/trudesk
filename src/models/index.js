@@ -14,6 +14,7 @@ const Message = require('./chat/message')
 const Conversation = require('./chat/conversation')
 const Faq = require('./faq')
 const Otp = require('./otp')
+const Template = require('./template')
 
 module.exports = {
   User,
@@ -32,4 +33,5 @@ module.exports = {
   Status,
   Faq,
   Otp,
+  Template,
 }
