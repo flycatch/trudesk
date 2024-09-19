@@ -70,6 +70,7 @@ auth.verifiedEmail = (options) => async (req, res, next) => {
         'Email not verified'
       )
     }
+    req.verifiedEmailSession = { enabled: true, verified: false }
     return next()
   }
   if (!info.email || !info.expiry) {
@@ -80,6 +81,7 @@ auth.verifiedEmail = (options) => async (req, res, next) => {
         'Invalid request'
       )
     }
+    req.verifiedEmailSession = { enabled: true, verified: false }
     return next()
   }
   const expired = moment.utc().diff(moment(info.expiry), 'seconds', true) >= 0
@@ -91,11 +93,12 @@ auth.verifiedEmail = (options) => async (req, res, next) => {
         'Email not verified'
       )
     }
+    req.verifiedEmailSession = { enabled: true, verified: false }
     return next()
   }
   req.verifiedEmailSession = {
     enabled: enabled.value,
-    verified: options.verify,
+    verified: true,
     email: info.email,
   }
   next()
