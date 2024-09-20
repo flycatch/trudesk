@@ -78,7 +78,7 @@ apiUtils.stripUserFields = function (user) {
  * @callback AsyncRequestHandler
  * @param {import('express').Request} req
  * @param {import('express').Response} res
- * @param {import('express').NextFunction |  undefined} next
+ * @param {import('express').NextFunction} next
  * @returns {Promise<any>}
  *
  * @callback ErrHandler

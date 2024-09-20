@@ -50,6 +50,16 @@ statics.findByEmail = async (email) => {
   return Otp.findOne({ email }).exec()
 }
 
+/**
+  * Deletes Otp by email.
+  *
+  * @param {string} email
+  * @returns {Promise.<void>}
+  */
+statics.deleteByEmail = async (email) => {
+  await Otp.deleteOne({ email }).exec()
+}
+
 
 OtpSchema.statics = statics
 

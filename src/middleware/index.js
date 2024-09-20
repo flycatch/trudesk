@@ -52,9 +52,10 @@ module.exports = function (app, db, callback) {
   // Required to access handlebars in mail templates
   global.Handlebars = hbs.handlebars
 
+  const sessionSecret = nconf.get('tokens:secret') ? nconf.get('tokens:secret') : 'trudesk$1234#SessionKeY!2288'
   app.use(bodyParser.urlencoded({ limit: '2mb', extended: false }))
   app.use(bodyParser.json({ limit: '2mb' }))
-  app.use(cookieParser())
+  app.use(cookieParser(sessionSecret))
 
   if (global.env === 'production') {
     app.use(
@@ -75,13 +76,6 @@ module.exports = function (app, db, callback) {
     return next()
   })
 
-  const cookie = {
-    httpOnly: true,
-    maxAge: 1000 * 60 * 60 * 24 * 365 // 1 year
-  }
-
-  const sessionSecret = nconf.get('tokens:secret') ? nconf.get('tokens:secret') : 'trudesk$1234#SessionKeY!2288'
-
   async.waterfall(
     [
       function (next) {
@@ -92,7 +86,10 @@ module.exports = function (app, db, callback) {
         app.use(
           session({
             secret: sessionSecret,
-            cookie,
+            cookie: {
+              httpOnly: true,
+              maxAge: 1000 * 60 * 60 * 24 * 365 // 1 year
+            },
             store: sessionStore,
             saveUninitialized: false,
             resave: false
