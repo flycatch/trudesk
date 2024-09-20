@@ -1,4 +1,6 @@
 module.exports = /** @type {const} */ ({
+  GEN_SITE_URL: 'gen:siteurl',
+
   ES_ENABLE: 'es:enable',
   ES_HOST: 'es:host',
   ES_PORT: 'es:port',
