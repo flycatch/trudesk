@@ -22,7 +22,7 @@ const OtpSchema = new mongoose.Schema({
   // since its short lived do we even need to hash it?
   password: { type: String, required: true },
   email: { type: String, required: true },
-  expiry: { type: Date, required: true },
+  expiry: { type: Date, required: true, expires: 30 * 60 }, 
   retries: { type: 'number', required: true, default: 0 }
 }, { timestamps: { updatedAt: 'updatedAt' } })
 

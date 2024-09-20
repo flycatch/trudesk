@@ -3,6 +3,8 @@ const { OtpService } = require('@/services/auth/otp')
 const { OtpError } = require('./errors')
 const apiUtils = require('@/controllers/api/apiUtils')
 const logger = require('@/logger')
+const { Setting } = require('@/models')
+const { OTP_ENABLE } = require('@/settings/settings-keys')
 
 const auth = {}
 
@@ -53,7 +55,12 @@ auth.createVerifiedSession = async (res, otp, email) => {
  * @param {MiddlewareOptions} options
  * @returns {import('express').RequestHandler} 
  */
-auth.verifiedEmail = (options) => (req, res, next) => {
+auth.verifiedEmail = (options) => async (req, res, next) => {
+  const enabled = await Setting.getSettingByName(OTP_ENABLE);
+  if (!enabled?.value) {
+    req.verifiedEmailSession = { enabled: false, verified: false }
+    return next()
+  }
   const info = req.signedCookies[auth.__verifiedSessionKey]
   if (info == undefined || info === false) {
     if (options.verify) {
@@ -63,6 +70,7 @@ auth.verifiedEmail = (options) => (req, res, next) => {
         'Email not verified'
       )
     }
+    req.verifiedEmailSession = { enabled: true, verified: false }
     return next()
   }
   if (!info.email || !info.expiry) {
@@ -73,6 +81,7 @@ auth.verifiedEmail = (options) => (req, res, next) => {
         'Invalid request'
       )
     }
+    req.verifiedEmailSession = { enabled: true, verified: false }
     return next()
   }
   const expired = moment.utc().diff(moment(info.expiry), 'seconds', true) >= 0
@@ -84,9 +93,14 @@ auth.verifiedEmail = (options) => (req, res, next) => {
         'Email not verified'
       )
     }
+    req.verifiedEmailSession = { enabled: true, verified: false }
     return next()
   }
-  req.verifiedEmail = info.email
+  req.verifiedEmailSession = {
+    enabled: enabled.value,
+    verified: true,
+    email: info.email,
+  }
   next()
 }
 

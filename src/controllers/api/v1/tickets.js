@@ -527,6 +527,9 @@ apiTickets.create = function (req, res) {
  {
      "error": "Invalid Post Data"
  }
+ * @param {import('express').Request} req
+ * @param {import('express').Response} res
+ *
  */
 apiTickets.createPublicTicket = function (req, res) {
   const Chance = require('chance')
@@ -539,6 +542,9 @@ apiTickets.createPublicTicket = function (req, res) {
   const postData = req.body
   if (!_.isObject(postData)) {
     return res.status(400).json({ success: false, error: 'Invalid Post Data' })
+  }
+  if (req.verifiedEmailSession?.enabled && postData.user?.email !== req.verifiedEmailSession?.email) {
+    return res.status(400).json({ success: false, error: 'Unverified Email' })
   }
   let plainTextPass
   let existingUser = false

@@ -12,6 +12,8 @@
  *  Copyright (c) 2014-2019. All rights reserved.
  */
 
+const { auth } = require('@/services/auth')
+
 module.exports = function (middleware, router, controllers) {
   // Shorten Vars
 
@@ -42,8 +44,8 @@ module.exports = function (middleware, router, controllers) {
   // public emails
   /** @type {typeof import('./public-email')} */
   const publicEmailApi = apiv2.publicEmail
-  router.post('/api/v2/public-email/otp', publicEmailApi.sendOtp)
-  router.post('/api/v2/public-email/verify', publicEmailApi.verifyEmail)
+  router.post('/api/v2/public-email/otp', auth.verifiedEmail({ verify: false }), publicEmailApi.sendOtp)
+  router.post('/api/v2/public-email/verify',auth.verifiedEmail({ verify: false }), publicEmailApi.verifyEmail)
 
   // Ticket Info
   router.get('/api/v2/tickets/info/types', apiv2Auth, apiv2.tickets.info.types)

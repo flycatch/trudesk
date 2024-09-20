@@ -11,7 +11,12 @@ declare global {
 
     namespace Express {
         export interface Request {
-            verifiedEmail: string | undefined
+            /** Stores info related to verification session */
+            verifiedEmailSession?: {
+                enabled: boolean;
+                verified: boolean;
+                email?: string | undefined
+            }
         }
     }
 }
