@@ -15,7 +15,7 @@ publicEmailApi.sendOtp = apiUtils.catchAsync(async (req, res) => {
   if (errors) {
     return apiUtils.sendApiError(res, 400, errors)
   }
-  if (!req.verifiedEmailSession?.enabled 
+  if (!req.verifiedEmailSession?.enabled
     || req.verifiedEmailSession?.verified && req.verifiedEmailSession.email === body.email) {
     return apiUtils.sendApiSuccess(res, { message: "Already verfied", verified: true })
   }
@@ -30,20 +30,15 @@ publicEmailApi.sendOtp = apiUtils.catchAsync(async (req, res) => {
 
 /** Verifies the email with provided otp */
 publicEmailApi.verifyEmail = apiUtils.catchAsync(async (req, res) => {
-  try {
-    const [body, errors] = validate(VerifyOtpSchema, req.body)
-    if (errors) {
-      return apiUtils.sendApiError(res, 400, errors)
-    }
-    if (req.verifiedEmailSession?.verified && req.verifiedEmailSession?.email === body.email) {
-      return apiUtils.sendApiSuccess(res, { message: "Already verfied", verified: true })
-    }
-    const response = await auth.createVerifiedSession(res, body.otp, body.email)
-    return apiUtils.sendApiSuccess(response, { message: "Otp Verified", verified: true })
-  } catch (err) {
-    logger.warn(`Something unexpected occured when creating a verfied session. Error: ${err}`)
-    return apiUtils.sendApiError(res.clearCookie(auth.__verifiedSessionKey), err.status ?? 500, err)
+  const [body, errors] = validate(VerifyOtpSchema, req.body)
+  if (errors) {
+    return apiUtils.sendApiError(res, 400, errors)
   }
+  if (req.verifiedEmailSession?.verified && req.verifiedEmailSession?.email === body.email) {
+    return apiUtils.sendApiSuccess(res, { message: "Already verfied", verified: true })
+  }
+  const response = await auth.createVerifiedSession(res, body.otp, body.email)
+  return apiUtils.sendApiSuccess(response, { message: "Otp Verified", verified: true })
 })
 
 module.exports = publicEmailApi
