@@ -195,7 +195,7 @@ const getCorsConfig = async () => {
   }
   const setting = await Setting.getSettingsObjectByName([ALLOWED_ORIGINS, GEN_SITE_URL])
   corsConfig = {
-    origins: setting.allowed_origins,
+    origins: setting.allowed_origins ?? [],
     siteUrl: setting.gen_siteurl
   }
   corsConfig.origins.push(corsConfig.siteUrl);
