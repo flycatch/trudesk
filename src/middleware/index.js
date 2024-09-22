@@ -29,6 +29,9 @@ const bodyParser = require('body-parser')
 const cookieParser = require('cookie-parser')
 const session = require('express-session')
 const MongoStore = require('connect-mongo')
+const { Setting } = require('@/models')
+const { ALLOWED_ORIGINS, GEN_SITE_URL } = require('@/settings/settings-keys')
+const { emitter, events } = require('@/emitter')
 const passportConfig = require('../passport')()
 
 let middleware = {}
@@ -175,8 +178,48 @@ module.exports = function (app, db, callback) {
   )
 }
 
-function allowCrossDomain (req, res, next) {
-  res.setHeader('Access-Control-Allow-Origin', '*')
+/**
+  * @typedef {object} CorsConfig
+  * @prop {Array.<string>} origins
+  * @prop {string} siteUrl
+  * @prop {function(import('@/models/setting').Setting): Promise.<void>=} listener
+  */
+
+/** @type {CorsConfig=} */
+let corsConfig = undefined
+
+/** @returns {Promise.<CorsConfig>} */
+const getCorsConfig = async () => {
+  if (corsConfig) {
+    return corsConfig
+  }
+  const setting = await Setting.getSettingsObjectByName([ALLOWED_ORIGINS, GEN_SITE_URL])
+  corsConfig = {
+    origins: setting.allowed_origins,
+    siteUrl: setting.gen_siteurl
+  }
+  corsConfig.origins.push(corsConfig.siteUrl);
+  if (!corsConfig.listener) {
+    corsConfig.listener = async (setting) => {
+      if (setting.name !== ALLOWED_ORIGINS) {
+        return
+      }
+      const config = await getCorsConfig()
+      config.origins = setting.value
+      config.origins.push(config.siteUrl)
+    }
+    emitter.on(events.SETTINGS_UPDATED, corsConfig.listener)
+  }
+  return corsConfig
+}
+
+/** @type {import('express').RequestHandler} */
+async function allowCrossDomain(req, res, next) {
+  const config = await getCorsConfig()
+  if (req.headers.origin && config.origins.indexOf(req.headers.origin) !== -1) {
+    res.setHeader('Access-Control-Allow-Origin', req.headers.origin)
+    res.setHeader('Access-Control-Allow-Credentials', 'true')
+  }
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS')
   res.setHeader(
     'Access-Control-Allow-Headers',
