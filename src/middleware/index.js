@@ -39,6 +39,9 @@ let middleware = {}
 module.exports = function (app, db, callback) {
   middleware = require('./middleware')(app)
   app.disable('x-powered-by')
+  if (process.env.TD_TRUST_PROXY === 'true') {
+    app.enable('trust proxy')
+  }
 
   app.set('views', path.join(__dirname, '../views/'))
 
