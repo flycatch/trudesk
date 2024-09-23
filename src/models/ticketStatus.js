@@ -20,7 +20,23 @@ const _ = require('lodash')
 
 var COLLECTION = 'statuses'
 
-var statusSchema = mongoose.Schema(
+/**
+  * @typedef {object} ITicketStatus
+  * @prop {string} name
+  * @prop {string} htmlColor
+  * @prop {number} uid
+  * @prop {number} order
+  * @prop {boolean} slatimer
+  * @prop {boolean} isResolved
+  * @prop {boolean} isLocked
+  *
+  * @typedef {mongoose.Document & ITicketStatus} TicketStatus
+  * @typedef {mongoose.Model<TicketStatus> & typeof statics} TicketModel
+  */
+
+
+/** @type {mongoose.Schema<TicketStatus>} */
+const statusSchema = new mongoose.Schema(
   {
     name: { type: String, required: true, unique: true },
     htmlColor: { type: String, default: '#29b955' },
@@ -61,23 +77,35 @@ statusSchema.pre('save', function (next) {
   })
 })
 
-statusSchema.statics.getStatus = function (callback) {
-  return this.model(COLLECTION)
+const statics = {}
+
+statics.getStatus = function (callback) {
+  return TicketStatus
     .find({})
     .sort({ order: 1 })
     .exec(callback)
 }
 
-statusSchema.statics.getStatusById = function (_id, callback) {
-  return this.model(COLLECTION)
+/**
+  * @param {string} _id
+  * @param {function=} callback
+  *
+  * @returns {Promise.<TicketStatus>}
+  * */
+statics.getStatusById = function (_id, callback) {
+  return TicketStatus
     .findOne({ _id: _id })
     .exec(callback)
 }
 
-statusSchema.statics.getStatusByUID = function (uid, callback) {
-  return this.model(COLLECTION)
+statics.getStatusByUID = function (uid, callback) {
+  return TicketStatus
     .findOne({ uid: uid })
     .exec(callback)
 }
 
-module.exports = mongoose.model(COLLECTION, statusSchema)
+statusSchema.statics = statics
+
+/** @type {TicketModel} */
+const TicketStatus = mongoose.model(COLLECTION, statusSchema)
+module.exports = TicketStatus
