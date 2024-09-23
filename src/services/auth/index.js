@@ -38,6 +38,7 @@ auth.createVerifiedSession = async (res, otp, email) => {
   }
   return res.cookie(auth.__verifiedSessionKey, { email, expiry }, {
     secure,
+    partitioned: true,
     signed: true,
     httpOnly: true,
     sameSite: secure ? 'none' : 'lax',
