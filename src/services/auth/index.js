@@ -4,7 +4,7 @@ const { OtpError } = require('./errors')
 const apiUtils = require('@/controllers/api/apiUtils')
 const logger = require('@/logger')
 const { Setting } = require('@/models')
-const { OTP_ENABLE } = require('@/settings/settings-keys')
+const { OTP_ENABLE, GEN_SITE_URL } = require('@/settings/settings-keys')
 
 const auth = {}
 
@@ -30,10 +30,18 @@ auth.createVerifiedSession = async (res, otp, email) => {
   const expiry = moment.utc().add(auth.__tempSessionMaxAge, 'seconds').toJSON()
 
   logger.debug(`A verified session has been created for ${email}`)
+  /** @type {{ value: string}} */
+  const { value: genSite } = await Setting.getSetting(GEN_SITE_URL)
+  const secure = genSite.startsWith('https')
+  if (!secure) {
+    logger.warn(`Website not in https. Verified session will not work in cross domain. Only on ${genSite}`)
+  }
   return res.cookie(auth.__verifiedSessionKey, { email, expiry }, {
-    secure: global.env === 'production',
+    secure,
+    partitioned: true,
     signed: true,
     httpOnly: true,
+    sameSite: secure ? 'none' : 'lax',
     maxAge: auth.__tempSessionMaxAge * 1000
   })
 }
