@@ -255,7 +255,7 @@ ticketSchema.methods.setStatus = function (ownerId, status, callback) {
 
       const historyItem = {
         action: 'ticket:set:status:' + statusModel.name,
-        description: 'Ticket Status set to: ' + statusModel.name,
+        description: 'Ticket status set to: ' + statusModel.name,
         owner: ownerId
       }
 
