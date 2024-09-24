@@ -19,6 +19,8 @@ const apiUtils = require('../apiUtils')
 const Models = require('../../../models')
 const permissions = require('../../../permissions')
 const ticketStatusSchema = require('../../../models/ticketStatus')
+const { validate } = require('@/validators')
+const { TicketBatchUpdateRequestSchema } = require('@/validators/ticket')
 
 const ticketsV2 = {}
 
@@ -164,37 +166,40 @@ ticketsV2.update = function (req, res) {
   })
 }
 
-ticketsV2.batchUpdate = function (req, res) {
-  const batch = req.body.batch
-  if (!_.isArray(batch)) return apiUtils.sendApiError_InvalidPostData(res)
+/** @type {import('express').RequestHandler} */
+ticketsV2.batchUpdate = apiUtils.catchAsync(async function (req, res) {
+  const [body, errors] = validate(TicketBatchUpdateRequestSchema, req.body)
+  if (errors) {
+    logger.error(errors)
+    return apiUtils.sendApiError(res, 400, errors)
+  }
 
-  async.each(
-    batch,
-    function (batchTicket, next) {
-      Models.Ticket.getTicketById(batchTicket.id, function (err, ticket) {
-        if (err) return next(err)
-
-        if (!_.isUndefined(batchTicket.status)) {
-          ticket.status = batchTicket.status
-          const HistoryItem = {
-            action: 'ticket:set:status',
-            description: 'status set to: ' + batchTicket.status,
-            owner: req.user._id
-          }
-
-          ticket.history.push(HistoryItem)
-        }
-
-        return ticket.save(next)
+  /** @type {Object.<string, import('@/models/ticketStatus').TicketStatus>} */
+  const statusCache = {}
+  for await (const item of body.batch) {
+    const ticket = await Models.Ticket.getTicketById(item.id)
+    if (item.status) {
+        const status =  statusCache[item.status] == undefined
+          ? await Models.Status.getStatusById(item.status)
+          : statusCache[item.status]
+      if (status == undefined) {
+        const error = new Error('Status not found')
+        error.status = 400
+        throw error
+      }
+      statusCache[item.status] = status
+      ticket.status = status._id
+      ticket.history.push({
+        action: 'ticket:set:status',
+        description: `Ticket status set to: ${status.name}`,
+        owner: req.user?._id
       })
-    },
-    function (err) {
-      if (err) return apiUtils.sendApiError(res, 400, err.message)
-
-      return apiUtils.sendApiSuccess(res)
     }
-  )
-}
+    await ticket.save()
+  }
+  return apiUtils.sendApiSuccess(res)
+})
+
 
 ticketsV2.delete = function (req, res) {
   const uid = req.params.uid
