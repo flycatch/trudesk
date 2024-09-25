@@ -4,7 +4,7 @@ const { Otp, Setting } = require('@/models')
 const { OTP_LIMIT, OTP_EXPIRY, OTP_RANGE, defaults, OTP_RETRY_AFTER } = require('@/settings/settings-keys')
 const { validate } = require('@/validators')
 const { OtpSettingsSchema } = require('@/validators/setting-keys')
-const { OtpError } = require('@/services/auth/errors')
+const { TooManyOtpRequests } = require('@/services/auth/errors')
 const logger = require('@/logger')
 
 const OtpService = {}
@@ -49,8 +49,8 @@ const getSettings = async () => {
   *
   * @param {string} email - The email for which otp should be generated
   * @throws {OtpError}
-  * @returns {Promise.<import('@/models/otp').Otp>}
-  */
+  * @returns {Promise.<{ otp: import('@/models/otp').Otp, remainingRetries: number }>}
+ */
 OtpService.generateOtp = async (email) => {
   logger.debug(`Generating otp for ${email}`)
 
@@ -63,7 +63,7 @@ OtpService.generateOtp = async (email) => {
 
   if (emailOtp.retries >= settings.otp_limit) {
     if (moment.utc().diff(emailOtp.updatedAt, 'seconds') < settings.otp_retryAfter) {
-      throw new OtpError(`Too many otps requested. Retry after ${settings.otp_retryAfter / 60} minutes`, 429)
+      throw new TooManyOtpRequests(429, settings.otp_retryAfter, settings.otp_limit - emailOtp.retries)
     }
     emailOtp.retries = 0
   }
@@ -72,7 +72,11 @@ OtpService.generateOtp = async (email) => {
   emailOtp.retries = emailOtp.retries != undefined ? emailOtp.retries + 1 : 0
   emailOtp.email = email
   emailOtp.expiry = moment.utc().add(settings.otp_expiry, 'seconds').toDate()
-  return emailOtp.save()
+  const otp = await emailOtp.save()
+  return {
+    otp,
+    remainingRetries: settings.otp_limit - otp.retries
+  }
 }
 
 /**

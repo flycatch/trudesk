@@ -25,10 +25,14 @@ apiUtils.sendApiSuccess = function (res, object) {
 }
 
 apiUtils.sendApiError = function (res, errorNum, error) {
+  let message = error
   if (error instanceof Error) {
-    error = error.message
+    message = error.message
   }
-  return res.status(errorNum).json({ success: false, error })
+  if (error.status) {
+    delete error.status
+  }
+  return res.status(errorNum).json({ success: false, error: message, ...error })
 }
 apiUtils.sendApiError_InvalidPostData = function (res) {
   return apiUtils.sendApiError(res, 400, 'Invalid Post Data')

@@ -6,6 +6,7 @@ const mailer = require('@/mailer')
 const logger = require('@/logger')
 const { defaults } = require('@/settings/settings-keys')
 const { auth } = require('@/services/auth')
+const { OtpError } = require('@/services/auth/errors')
 
 const publicEmailApi = {}
 
@@ -19,13 +20,13 @@ publicEmailApi.sendOtp = apiUtils.catchAsync(async (req, res) => {
     || req.verifiedEmailSession?.verified && req.verifiedEmailSession.email === body.email) {
     return apiUtils.sendApiSuccess(res, { message: "Already verfied", verified: true })
   }
-  const otp = await OtpService.generateOtp(body.email)
+  const response = await OtpService.generateOtp(body.email)
   mailer.sendTemplatedMail({
     to: body.email,
     template: 'email-verify-otp',
-    templateProps: { password: otp.password, expiresIn: `${defaults.OTP_EXPIRY / 60} minutes` }
+    templateProps: { password: response.otp.password, expiresIn: `${defaults.OTP_EXPIRY / 60} minutes` }
   }).catch(err => logger.error('Failed to send email verification mail', err))
-  return apiUtils.sendApiSuccess(res, { message: "Otp succesfully send to email" })
+  return apiUtils.sendApiSuccess(res, { message: "Otp succesfully send to email", remainingRetries: response.remainingRetries })
 })
 
 /** Verifies the email with provided otp */
