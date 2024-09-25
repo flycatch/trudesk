@@ -49,7 +49,7 @@ const getSettings = async () => {
   *
   * @param {string} email - The email for which otp should be generated
   * @throws {OtpError}
-  * @returns {Promise.<{ otp: import('@/models/otp').Otp, remainingRetries: number }>}
+  * @returns {Promise.<{ otp: import('@/models/otp').Otp, limit: number, retry: number }>}
  */
 OtpService.generateOtp = async (email) => {
   logger.debug(`Generating otp for ${email}`)
@@ -75,7 +75,8 @@ OtpService.generateOtp = async (email) => {
   const otp = await emailOtp.save()
   return {
     otp,
-    remainingRetries: settings.otp_limit - otp.retries
+    limit: settings.otp_limit,
+    retry: otp.retries,
   }
 }
 
