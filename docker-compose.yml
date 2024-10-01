@@ -20,14 +20,17 @@ services:
     volumes:
       - trudesk_uploads:/usr/src/trudesk/public/uploads
       - trudesk_backups:/usr/src/trudesk/backups
+    networks:
+      - trudesk
+      - trudesk-elk
   mongo:
     image: mongo:5.0-focal
     restart: always
-    ports:
-      - "27017:27017"
     volumes:
       - mongo:/var/lib/mongo
       - mongo_data:/data/db:rw
+    networks:
+      - trudesk
   elasticsearch:
     image: elasticsearch:8.0.0
     restart: always
@@ -41,24 +44,41 @@ services:
       memlock:
         soft: -1
         hard: -1
-    ports:
-      - "9200:9200"
-      - "9300:9300"
     volumes:
       - elasticsearch:/usr/share/elasticsearch/data
+    networks:
+      - trudesk-elk
 
   fake-smtp-server:
-    container_name: dev-fake-smtp-server
+    container_name: trudesk-fake-smtp-server
     image: rnwood/smtp4dev
     restart: on-failure
+    ports:
+      - "3010:80"
     profiles:
       - dev
+    networks:
+      - trudesk
+  kibana:
+    image: kibana:8.0.0
+    restart: always
     ports:
-      - "3000:80"
-      - "2525:25"
+      - 5601:5601
+    profiles:
+      - dev
+    environment:
+      SERVER_NAME: "kibana:5601"
+      ELASTICSEARCH_HOSTS: "http://elasticsearch:9200"
+    networks:
+      - trudesk-elk
 volumes:
   trudesk_uploads:
   trudesk_backups:
   mongo:
   mongo_data:
   elasticsearch:
+networks:
+  trudesk:
+    name: trudesk
+  trudesk-elk:
+    name: trudesk-elk
