@@ -20,7 +20,7 @@ const ticketTypeSchema = require('../models/tickettype')
 const roleSchema = require('../models/role')
 const roleOrderSchema = require('../models/roleorder')
 const statusSchema = require('../models/ticketStatus')
-const { ES_ENABLE, ES_HOST, ES_PORT, AUTOTAGGER_ENABLE, TAGGER_USE_INFERENCE, AI_HOST, TAGGER_PREFERENCES, AI_BASIC_TOKEN, TAGGER_STRATEGY, TAGGER_STRATEGY_OPTIONS, OTP_ENABLE } = require('./settings-keys')
+const { ES_ENABLE, ES_HOST, ES_PORT, AUTOTAGGER_ENABLE, TAGGER_USE_INFERENCE, AI_HOST, TAGGER_PREFERENCES, AI_BASIC_TOKEN, TAGGER_STRATEGY, TAGGER_STRATEGY_OPTIONS, OTP_ENABLE, SEMANTICSEARCH_ENABLE } = require('./settings-keys')
 
 const util = {}
 
@@ -111,6 +111,9 @@ util.getSettings = async callback => {
           value: s.elasticSearchEnabled.value === true && !_.isEmpty(s.elasticSearchHost.value)
         }
 
+        //Semanticsearch
+        s.semanticSearchEnabled = parseSetting(settings, SEMANTICSEARCH_ENABLE, true)
+
         s.tpsEnabled = parseSetting(settings, 'tps:enable', false)
         s.tpsUsername = parseSetting(settings, 'tps:username', '')
         s.tpsApiKey = parseSetting(settings, 'tps:apikey', '')
@@ -119,6 +122,8 @@ util.getSettings = async callback => {
         s.allowPublicTickets = parseSetting(settings, 'allowPublicTickets:enable', false)
         s.allowUserRegistration = parseSetting(settings, 'allowUserRegistration:enable', false)
         s.playNewTicketSound = parseSetting(settings, 'playNewTicketSound:enable', true)
+
+        //OTP
         s.enableOTP = parseSetting(settings,OTP_ENABLE, false)
 
         s.privacyPolicy = parseSetting(settings, 'legal:privacypolicy', ' ')
