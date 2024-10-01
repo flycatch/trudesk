@@ -489,8 +489,8 @@ class TicketsSettings extends React.Component {
         {/*  </Zone>*/}
         {/*</SettingItem>*/}
 
-        <AutoTagger />
-        <TaggingStrategies />
+        {/* <AutoTagger />
+        <TaggingStrategies /> */}
 
         <SettingItem
           title={'Ticket Tags'}
