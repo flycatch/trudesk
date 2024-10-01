@@ -133,6 +133,14 @@ settingsController.elasticsearchSettings = function (req, res) {
   renderView(res, content)
 }
 
+settingsController.aiSettings = function (req, res) {
+  if (!checkPerms(req, 'settings:ai')) return res.redirect('/settings')
+
+  const content = initViewContent('ai', req)
+
+  renderView(res, content)
+}
+
 settingsController.tpsSettings = function (req, res) {
   if (!checkPerms(req, 'settings:tps')) return res.redirect('/settings')
 

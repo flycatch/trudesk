@@ -323,6 +323,12 @@ function mainRoutes (router, middleware, controllers) {
     middleware.loadCommonData,
     controllers.settings.elasticsearchSettings
   )
+  router.get(
+    '/settings/ai',
+    middleware.redirectToLogin,
+    middleware.loadCommonData,
+    controllers.settings.aiSettings
+  )
   router.get('/settings/tps', middleware.redirectToLogin, middleware.loadCommonData, controllers.settings.tpsSettings)
   router.get(
     '/settings/backup',

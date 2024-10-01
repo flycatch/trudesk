@@ -27,6 +27,7 @@ import PermissionsSettingsContainer from './Permissions'
 import TicketsSettings from './Tickets'
 import MailerSettingsContainer from './Mailer'
 import ElasticsearchSettingsContainer from './Elasticsearch'
+import AISettingsContainer from './AI';
 // import TPSSettingsContainer from './TPS'
 import BackupRestoreSettingsContainer from './BackupRestore'
 import ServerSettingsController from './Server'
@@ -133,6 +134,13 @@ class SettingsContainer extends React.Component {
                 }}
               />
               <MenuItem
+                title={'AI'}
+                active={this.state.activeCategory === 'settings-ai'}
+                onClick={e => {
+                  this.onMenuItemClick(e, 'ai')
+                }}
+              />
+              <MenuItem
                 title='Backup/Restore'
                 active={this.state.activeCategory === 'settings-backup'}
                 onClick={e => {
@@ -170,6 +178,7 @@ class SettingsContainer extends React.Component {
               <TicketsSettings active={this.state.activeCategory === 'settings-tickets'} />
               <MailerSettingsContainer active={this.state.activeCategory === 'settings-mailer'} />
               <ElasticsearchSettingsContainer active={this.state.activeCategory === 'settings-elasticsearch'} />
+              <AISettingsContainer active={this.state.activeCategory === 'settings-ai'} />
               <BackupRestoreSettingsContainer active={this.state.activeCategory === 'settings-backup'} />
               <ServerSettingsController active={this.state.activeCategory === 'settings-server'} />
               <LegalSettingsContainer active={this.state.activeCategory === 'settings-legal'} />
